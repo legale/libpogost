@@ -46,9 +46,11 @@ test: $(TEST)
 	$(TEST)
 
 san:
-	$(MAKE) BUILD_DIR=build/san-asan CC="$(SAN_CC)" \
+	$(MAKE) BUILD_DIR=build/san-asan LIB=build/san-asan/libpogost.a \
+		CC="$(SAN_CC)" \
 		CFLAGS="$(CFLAGS) -fsanitize=address -fno-omit-frame-pointer" test
-	$(MAKE) BUILD_DIR=build/san-ubsan CC="$(SAN_CC)" \
+	$(MAKE) BUILD_DIR=build/san-ubsan LIB=build/san-ubsan/libpogost.a \
+		CC="$(SAN_CC)" \
 		CFLAGS="$(CFLAGS) -fsanitize=undefined" test
 
 clean:
