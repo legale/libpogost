@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <libpogost/kuznechik.h>
+#include "../src/kuznechik_internal.h"
 
 /* Вектор из тестов Linux Crypto API. */
 static const unsigned char key[KUZNECHIK_KEY_SIZE] = {
@@ -21,6 +23,47 @@ static const unsigned char ciphertext[KUZNECHIK_BLOCK_SIZE] = {
   0x5a, 0x46, 0x8d, 0x42, 0xb9, 0xd4, 0xed, 0xcd,
 };
 
+static uint32_t random_word(uint32_t *state)
+{
+  *state = *state * 1664525U + 1013904223U;
+  return *state;
+}
+
+#if defined(LIBPOGOST_HAVE_KUZNECHIK_SIMD)
+/* Generic и SIMD должны совпадать на разных ключах и блоках. */
+static int test_differential(void)
+{
+  struct kuznechik_ctx generic;
+  struct kuznechik_ctx simd;
+  unsigned char key[KUZNECHIK_KEY_SIZE];
+  unsigned char input[KUZNECHIK_BLOCK_SIZE];
+  unsigned char generic_out[KUZNECHIK_BLOCK_SIZE];
+  unsigned char simd_out[KUZNECHIK_BLOCK_SIZE];
+  unsigned char recovered[KUZNECHIK_BLOCK_SIZE];
+  uint32_t state = 1;
+  unsigned int i;
+  unsigned int j;
+
+  for (i = 0; i < 256; i++) {
+    for (j = 0; j < sizeof(key); j++)
+      key[j] = random_word(&state);
+    for (j = 0; j < sizeof(input); j++)
+      input[j] = random_word(&state);
+    if (kuznechik_setkey(&generic, key) ||
+        kuznechik_simd_setkey(&simd, key))
+      return 1;
+    kuznechik_encrypt(&generic, generic_out, input);
+    kuznechik_simd_encrypt(&simd, simd_out, input);
+    if (memcmp(generic_out, simd_out, sizeof(generic_out)))
+      return 1;
+    kuznechik_simd_decrypt(&simd, recovered, simd_out);
+    if (memcmp(recovered, input, sizeof(recovered)))
+      return 1;
+  }
+  return 0;
+}
+#endif
+
 int main(void)
 {
   struct kuznechik_ctx ctx;
@@ -36,5 +79,19 @@ int main(void)
   if (memcmp(recovered, plaintext, sizeof(recovered)))
     return 1;
   puts("kuznechik generic: PASS");
+#if defined(LIBPOGOST_HAVE_KUZNECHIK_SIMD)
+  if (kuznechik_simd_setkey(&ctx, key))
+    return 1;
+  kuznechik_simd_encrypt(&ctx, out, plaintext);
+  if (memcmp(out, ciphertext, sizeof(out)))
+    return 1;
+  kuznechik_simd_decrypt(&ctx, recovered, out);
+  if (memcmp(recovered, plaintext, sizeof(recovered)))
+    return 1;
+  puts("kuznechik simd: PASS");
+  if (test_differential())
+    return 1;
+  puts("kuznechik differential: PASS");
+#endif
   return 0;
 }

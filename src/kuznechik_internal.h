@@ -60,5 +60,13 @@ void kuznechik_generic_encrypt(const struct kuznechik_ctx *ctx,
 void kuznechik_generic_decrypt(const struct kuznechik_ctx *ctx,
                                uint8_t out[KUZNECHIK_BLOCK_SIZE],
                                const uint8_t in[KUZNECHIK_BLOCK_SIZE]);
+int kuznechik_simd_setkey(struct kuznechik_ctx *ctx,
+                          const uint8_t key[KUZNECHIK_KEY_SIZE]);
+void kuznechik_simd_encrypt(const struct kuznechik_ctx *ctx,
+                            uint8_t out[KUZNECHIK_BLOCK_SIZE],
+                            const uint8_t in[KUZNECHIK_BLOCK_SIZE]);
+void kuznechik_simd_decrypt(const struct kuznechik_ctx *ctx,
+                            uint8_t out[KUZNECHIK_BLOCK_SIZE],
+                            const uint8_t in[KUZNECHIK_BLOCK_SIZE]);
 
 #endif
