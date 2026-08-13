@@ -12,9 +12,18 @@
 - криптографическое ядро без libc, malloc, pthread, OpenSSL и Linux headers;
 - caller-owned buffers и минимальный публичный API;
 - generic-реализация как эталон для SIMD и regression-тестов;
-- название алгоритма: `Kuznechik` в тексте и `kuznechik` в коде.
+- название алгоритма: `Kuznyechik` в тексте и `kuznyechik` в коде.
 
 ## Текущее содержимое
+
+- Streebog-256 и Streebog-512;
+- ГОСТ Р 34.10-2012/512: открытый ключ, подпись, проверка и VKO на paramSetA;
+- Kuznyechik, OMAC, CTR-ACPKM и KExp15/KImp15;
+- HMAC, KDF_TREE, TLS PRF и TLSTREE для TLS-ГОСТ.
+
+Эти функции используются патчем mbedTLS для шифронабора
+`TLS_GOSTR341112_256_WITH_KUZNYECHIK_CTR_OMAC` (`0xc100`). mbedTLS собирается
+с установленными заголовками и статической библиотекой `libpogost`.
 
 ```text
 include/libpogost/     публичный API

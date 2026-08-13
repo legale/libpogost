@@ -7,15 +7,20 @@ CPPFLAGS ?= -Iinclude -Isrc
 CFLAGS ?= -O2 -std=c11 -Wall -Wextra -Werror
 
 LIB = libpogost.a
-LIB_OBJS = $(BUILD_DIR)/kuznechik.o \
-	$(BUILD_DIR)/generic/kuznechik_generic.o
+LIB_OBJS = $(BUILD_DIR)/kuznyechik.o \
+	$(BUILD_DIR)/generic/ecc_generic.o \
+	$(BUILD_DIR)/generic/gost3410_generic.o \
+	$(BUILD_DIR)/generic/gost_tls_generic.o \
+	$(BUILD_DIR)/generic/kuznyechik_generic.o \
+	$(BUILD_DIR)/generic/streebog_generic.o
 
 ifeq ($(shell uname -m),x86_64)
-CPPFLAGS += -DLIBPOGOST_HAVE_KUZNECHIK_SIMD=1
-LIB_OBJS += $(BUILD_DIR)/x86_64/kuznechik_simd.o \
-	$(BUILD_DIR)/x86_64/kuznechik_simd_x86_64.o
+CPPFLAGS += -DLIBPOGOST_HAVE_KUZNYECHIK_SIMD=1
+LIB_OBJS += $(BUILD_DIR)/x86_64/kuznyechik_simd.o \
+	$(BUILD_DIR)/x86_64/kuznyechik_simd_x86_64.o
 endif
-TEST = $(BUILD_DIR)/test_kuznechik
+TESTS = $(BUILD_DIR)/test_gost3410 $(BUILD_DIR)/test_gost_tls \
+	$(BUILD_DIR)/test_kuznyechik $(BUILD_DIR)/test_streebog
 
 .PHONY: all static test san clean
 
@@ -38,12 +43,12 @@ $(BUILD_DIR)/%.o: src/%.S
 	mkdir -p $(dir $@)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-$(TEST): tests/test_kuznechik.c $(LIB)
+$(BUILD_DIR)/test_%: tests/test_%.c $(LIB)
 	mkdir -p $(dir $@)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(LIB) -o $@
 
-test: $(TEST)
-	$(TEST)
+test: $(TESTS)
+	@for test in $(TESTS); do $$test || exit; done
 
 san:
 	$(MAKE) BUILD_DIR=build/san-asan LIB=build/san-asan/libpogost.a \

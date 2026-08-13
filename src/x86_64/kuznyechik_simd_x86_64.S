@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-/* Четырёхблочное ядро x86-64 SSE2 для ГОСТ Р 34.12-2015 Kuznechik. */
+/* Четырёхблочное ядро x86-64 SSE2 для ГОСТ Р 34.12-2015 Kuznyechik. */
 
 .text
 
@@ -107,9 +107,9 @@
   movdqa %xmm11, %xmm3
   ret
 
-.globl kuznechik_simd_encrypt_4way
-.type kuznechik_simd_encrypt_4way,@function
-kuznechik_simd_encrypt_4way:
+.globl kuznyechik_simd_encrypt_4way
+.type kuznyechik_simd_encrypt_4way,@function
+kuznyechik_simd_encrypt_4way:
   movdqu 0(%rdx), %xmm0
   movdqu 16(%rdx), %xmm1
   movdqu 32(%rdx), %xmm2
@@ -137,11 +137,11 @@ kuznechik_simd_encrypt_4way:
   movdqu %xmm2, 32(%rsi)
   movdqu %xmm3, 48(%rsi)
   ret
-.size kuznechik_simd_encrypt_4way, .-kuznechik_simd_encrypt_4way
+.size kuznyechik_simd_encrypt_4way, .-kuznyechik_simd_encrypt_4way
 
-.globl kuznechik_simd_encrypt_1way
-.type kuznechik_simd_encrypt_1way,@function
-kuznechik_simd_encrypt_1way:
+.globl kuznyechik_simd_encrypt_1way
+.type kuznyechik_simd_encrypt_1way,@function
+kuznyechik_simd_encrypt_1way:
   movdqu 0(%rdx), %xmm0
   xor %edx, %edx
 
@@ -157,11 +157,11 @@ kuznechik_simd_encrypt_1way:
   pxor %xmm13, %xmm0
   movdqu %xmm0, 0(%rsi)
   ret
-.size kuznechik_simd_encrypt_1way, .-kuznechik_simd_encrypt_1way
+.size kuznyechik_simd_encrypt_1way, .-kuznyechik_simd_encrypt_1way
 
-.globl kuznechik_simd_decrypt_4way
-.type kuznechik_simd_decrypt_4way,@function
-kuznechik_simd_decrypt_4way:
+.globl kuznyechik_simd_decrypt_4way
+.type kuznyechik_simd_decrypt_4way,@function
+kuznyechik_simd_decrypt_4way:
   movdqu 0(%rdx), %xmm0
   movdqu 16(%rdx), %xmm1
   movdqu 32(%rdx), %xmm2
@@ -191,7 +191,7 @@ kuznechik_simd_decrypt_4way:
   movdqu %xmm2, 32(%rsi)
   movdqu %xmm3, 48(%rsi)
   ret
-.size kuznechik_simd_decrypt_4way, .-kuznechik_simd_decrypt_4way
+.size kuznyechik_simd_decrypt_4way, .-kuznyechik_simd_decrypt_4way
 
 .section .rodata.cst16, "aM", @progbits, 16
 .align 16
