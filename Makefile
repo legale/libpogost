@@ -9,10 +9,12 @@ CFLAGS ?= -O2 -std=c11 -Wall -Wextra -Werror
 LIB = libpogost.a
 LIB_OBJS = $(BUILD_DIR)/kuznyechik.o \
 	$(BUILD_DIR)/generic/ecc_generic.o \
+	$(BUILD_DIR)/generic/gost3410_256_generic.o \
 	$(BUILD_DIR)/generic/gost3410_generic.o \
 	$(BUILD_DIR)/generic/gost_tls_generic.o \
 	$(BUILD_DIR)/generic/kuznyechik_generic.o \
-	$(BUILD_DIR)/generic/streebog_generic.o
+	$(BUILD_DIR)/generic/streebog_generic.o \
+	$(BUILD_DIR)/optimized/gost3410_256a.o
 
 ifeq ($(shell uname -m),x86_64)
 CPPFLAGS += -DLIBPOGOST_HAVE_KUZNYECHIK_SIMD=1

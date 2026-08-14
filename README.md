@@ -17,9 +17,14 @@
 ## Текущее содержимое
 
 - Streebog-256 и Streebog-512;
+- ГОСТ Р 34.10-2012/256: открытый ключ, подпись и проверка на CryptoPro
+  XchA paramSet;
 - ГОСТ Р 34.10-2012/512: открытый ключ, подпись, проверка и VKO на paramSetA;
 - Kuznyechik, OMAC, CTR-ACPKM и KExp15/KImp15;
 - HMAC, KDF_TREE, TLS PRF и TLSTREE для TLS-ГОСТ.
+
+Для CryptoPro XchA используется ECCKiila/Fiat backend при наличии
+`__int128`; на остальных платформах остаётся generic ECC fallback.
 
 Эти функции используются патчем mbedTLS для шифронабора
 `TLS_GOSTR341112_256_WITH_KUZNYECHIK_CTR_OMAC` (`0xc100`). mbedTLS собирается
