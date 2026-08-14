@@ -29,6 +29,7 @@ struct ecc_curve {
 
 bool vli_is_zero(const u64 *vli, unsigned int ndigits);
 int vli_cmp(const u64 *left, const u64 *right, unsigned int ndigits);
+unsigned int vli_num_bits(const u64 *vli, unsigned int ndigits);
 u64 vli_sub(u64 *result, const u64 *left, const u64 *right,
             unsigned int ndigits);
 void vli_from_be64(u64 *dest, const void *src, unsigned int ndigits);

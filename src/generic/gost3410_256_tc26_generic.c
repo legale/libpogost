@@ -76,17 +76,169 @@ static void vli_to_be(uint8_t *out, const u64 *in)
   memset(tmp, 0, sizeof(tmp));
 }
 
+
+static void mod_sub(u64 *out, const u64 *a, const u64 *b)
+{
+  u64 t[NDIGITS];
+
+  if (vli_cmp(a, b, NDIGITS) >= 0) {
+    vli_sub(out, a, b, NDIGITS);
+    return;
+  }
+
+  vli_sub(t, b, a, NDIGITS);
+  vli_sub(out, curve.p, t, NDIGITS);
+}
+
+static int point_inf(const struct ecc_point *p)
+{
+  return vli_is_zero(p->x, NDIGITS) && vli_is_zero(p->y, NDIGITS);
+}
+
+static void point_copy(struct ecc_point *out, const struct ecc_point *p)
+{
+  memcpy(out->x, p->x, NDIGITS * sizeof(*out->x));
+  memcpy(out->y, p->y, NDIGITS * sizeof(*out->y));
+}
+
+static void point_zero(struct ecc_point *p)
+{
+  memset(p->x, 0, NDIGITS * sizeof(*p->x));
+  memset(p->y, 0, NDIGITS * sizeof(*p->y));
+}
+
+static void point_double(struct ecc_point *out, const struct ecc_point *p)
+{
+  u64 x[NDIGITS];
+  u64 y[NDIGITS];
+  u64 num[NDIGITS];
+  u64 den[NDIGITS];
+  u64 inv[NDIGITS];
+  u64 l[NDIGITS];
+  u64 t[NDIGITS];
+  u64 x3[NDIGITS];
+  u64 y3[NDIGITS];
+
+  if (point_inf(p) || vli_is_zero(p->y, NDIGITS)) {
+    point_zero(out);
+    return;
+  }
+
+  memcpy(x, p->x, sizeof(x));
+  memcpy(y, p->y, sizeof(y));
+
+  vli_mod_mult_slow(t, x, x, curve.p, NDIGITS);
+  vli_mod_add_generic(num, t, t, curve.p, NDIGITS);
+  vli_mod_add_generic(num, num, t, curve.p, NDIGITS);
+  vli_mod_add_generic(num, num, curve.a, curve.p, NDIGITS);
+  vli_mod_add_generic(den, y, y, curve.p, NDIGITS);
+  vli_mod_inv(inv, den, curve.p, NDIGITS);
+  vli_mod_mult_slow(l, num, inv, curve.p, NDIGITS);
+
+  vli_mod_mult_slow(x3, l, l, curve.p, NDIGITS);
+  vli_mod_add_generic(t, x, x, curve.p, NDIGITS);
+  mod_sub(x3, x3, t);
+  mod_sub(t, x, x3);
+  vli_mod_mult_slow(y3, l, t, curve.p, NDIGITS);
+  mod_sub(y3, y3, y);
+
+  memcpy(out->x, x3, sizeof(x3));
+  memcpy(out->y, y3, sizeof(y3));
+}
+
+static void point_add(struct ecc_point *out, const struct ecc_point *p,
+                      const struct ecc_point *q)
+{
+  u64 x1[NDIGITS];
+  u64 y1[NDIGITS];
+  u64 x2[NDIGITS];
+  u64 y2[NDIGITS];
+  u64 num[NDIGITS];
+  u64 den[NDIGITS];
+  u64 inv[NDIGITS];
+  u64 l[NDIGITS];
+  u64 t[NDIGITS];
+  u64 x3[NDIGITS];
+  u64 y3[NDIGITS];
+  struct ecc_point a = ECC_POINT_INIT(x1, y1, NDIGITS);
+
+  if (point_inf(p)) {
+    point_copy(out, q);
+    return;
+  }
+  if (point_inf(q)) {
+    point_copy(out, p);
+    return;
+  }
+  if (vli_cmp(p->x, q->x, NDIGITS) == 0) {
+    if (vli_cmp(p->y, q->y, NDIGITS) == 0) {
+      point_double(out, p);
+      return;
+    }
+    point_zero(out);
+    return;
+  }
+
+  memcpy(x1, p->x, sizeof(x1));
+  memcpy(y1, p->y, sizeof(y1));
+  memcpy(x2, q->x, sizeof(x2));
+  memcpy(y2, q->y, sizeof(y2));
+
+  mod_sub(num, y2, y1);
+  mod_sub(den, x2, x1);
+  vli_mod_inv(inv, den, curve.p, NDIGITS);
+  vli_mod_mult_slow(l, num, inv, curve.p, NDIGITS);
+
+  vli_mod_mult_slow(x3, l, l, curve.p, NDIGITS);
+  mod_sub(x3, x3, x1);
+  mod_sub(x3, x3, x2);
+  mod_sub(t, x1, x3);
+  vli_mod_mult_slow(y3, l, t, curve.p, NDIGITS);
+  mod_sub(y3, y3, y1);
+
+  memcpy(a.x, x3, sizeof(x3));
+  memcpy(a.y, y3, sizeof(y3));
+  point_copy(out, &a);
+}
+
+static void point_mult(struct ecc_point *out, const struct ecc_point *p,
+                       const u64 *k)
+{
+  u64 rx[NDIGITS] = { 0 };
+  u64 ry[NDIGITS] = { 0 };
+  u64 tx[NDIGITS];
+  u64 ty[NDIGITS];
+  struct ecc_point r = ECC_POINT_INIT(rx, ry, NDIGITS);
+  struct ecc_point t = ECC_POINT_INIT(tx, ty, NDIGITS);
+  unsigned int bits;
+  int i;
+
+  point_copy(&t, p);
+  bits = vli_num_bits(k, NDIGITS);
+  for (i = (int)bits - 1; i >= 0; i--) {
+    point_double(&r, &r);
+    if (k[i / 64] & ((u64)1 << (i % 64)))
+      point_add(&r, &r, &t);
+  }
+  point_copy(out, &r);
+}
+
 static int scalar_valid(const u64 *scalar)
 {
   return !vli_is_zero(scalar, NDIGITS) &&
          vli_cmp(scalar, curve.n, NDIGITS) < 0;
 }
 
+static void scalar_reduce(u64 *v)
+{
+  while (vli_cmp(v, curve.n, NDIGITS) >= 0)
+    vli_sub(v, v, curve.n, NDIGITS);
+}
+
 static void digest_scalar(u64 *e, const uint8_t *digest)
 {
   vli_from_le64(e, digest, NDIGITS);
-  if (vli_cmp(e, curve.n, NDIGITS) >= 0)
-    vli_sub(e, e, curve.n, NDIGITS);
+  scalar_reduce(e);
   if (vli_is_zero(e, NDIGITS))
     e[0] = 1;
 }
@@ -104,7 +256,7 @@ int gost3410_256tc26a_public(
   if (!scalar_valid(d))
     return -1;
 
-  ecc_point_mult_generic(&q, &curve.g, d, &curve);
+  point_mult(&q, &curve.g, d);
   vli_to_le(public_key, q.x);
   vli_to_le(public_key + GOST3410_256_KEY_SIZE, q.y);
   memset(d, 0, sizeof(d));
@@ -133,10 +285,9 @@ int gost3410_256tc26a_sign(
     return -1;
 
   digest_scalar(e, digest);
-  ecc_point_mult_generic(&c, &curve.g, k, &curve);
+  point_mult(&c, &curve.g, k);
   memcpy(r, c.x, sizeof(r));
-  if (vli_cmp(r, curve.n, NDIGITS) >= 0)
-    vli_sub(r, r, curve.n, NDIGITS);
+  scalar_reduce(r);
   if (vli_is_zero(r, NDIGITS))
     return -1;
 
@@ -175,7 +326,6 @@ int gost3410_256tc26a_verify(
   u64 qy2[NDIGITS];
   struct ecc_point q = ECC_POINT_INIT(qx, qy, NDIGITS);
   struct ecc_point c = ECC_POINT_INIT(cx, cy, NDIGITS);
-  int inf;
 
   vli_from_le64(q.x, public_key, NDIGITS);
   vli_from_le64(q.y, public_key + GOST3410_256_KEY_SIZE, NDIGITS);
@@ -190,14 +340,15 @@ int gost3410_256tc26a_verify(
   vli_mod_mult_slow(z1, s, e, curve.n, NDIGITS);
   vli_sub(z2, curve.n, r, NDIGITS);
   vli_mod_mult_slow(z2, z2, e, curve.n, NDIGITS);
-  (void) px;
-  (void) py;
-  (void) qx2;
-  (void) qy2;
-  (void) inf;
-  ecc_point_mult_shamir(&c, z1, &curve.g, z2, &q, &curve);
-  if (vli_cmp(c.x, curve.n, NDIGITS) >= 0)
-    vli_sub(c.x, c.x, curve.n, NDIGITS);
+  {
+    struct ecc_point p1 = ECC_POINT_INIT(px, py, NDIGITS);
+    struct ecc_point p2 = ECC_POINT_INIT(qx2, qy2, NDIGITS);
+
+    point_mult(&p1, &curve.g, z1);
+    point_mult(&p2, &q, z2);
+    point_add(&c, &p1, &p2);
+  }
+  scalar_reduce(c.x);
   return vli_cmp(c.x, r, NDIGITS) == 0 ? 0 : -1;
 }
 
@@ -228,7 +379,7 @@ int gost3410_256tc26a_vko(
   vli_mod_mult_slow(scalar, d, u, curve.n, NDIGITS);
   if (vli_is_zero(scalar, NDIGITS))
     return -1;
-  ecc_point_mult_generic(&q, &q, scalar, &curve);
+  point_mult(&q, &q, scalar);
   memcpy(x, q.x, sizeof(x));
   memcpy(y, q.y, sizeof(y));
   vli_to_le(secret, x);
