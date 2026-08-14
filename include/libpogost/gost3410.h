@@ -28,6 +28,24 @@ int gost3410_256a_verify(
     const uint8_t digest[GOST3410_256_DIGEST_SIZE],
     const uint8_t signature[GOST3410_256_SIGNATURE_SIZE]);
 
+int gost3410_256tc26a_public(
+    uint8_t public_key[GOST3410_256_PUBLIC_SIZE],
+    const uint8_t private_key[GOST3410_256_KEY_SIZE]);
+int gost3410_256tc26a_sign(
+    uint8_t signature[GOST3410_256_SIGNATURE_SIZE],
+    const uint8_t digest[GOST3410_256_DIGEST_SIZE],
+    const uint8_t private_key[GOST3410_256_KEY_SIZE],
+    const uint8_t nonce[GOST3410_256_KEY_SIZE]);
+int gost3410_256tc26a_verify(
+    const uint8_t public_key[GOST3410_256_PUBLIC_SIZE],
+    const uint8_t digest[GOST3410_256_DIGEST_SIZE],
+    const uint8_t signature[GOST3410_256_SIGNATURE_SIZE]);
+int gost3410_256tc26a_vko(
+    uint8_t shared_key[GOST3410_256_DIGEST_SIZE],
+    const uint8_t public_key[GOST3410_256_PUBLIC_SIZE],
+    const uint8_t private_key[GOST3410_256_KEY_SIZE],
+    const uint8_t ukm[GOST3410_256_KEY_SIZE / 2]);
+
 int gost3410_512a_public(
     uint8_t public_key[GOST3410_512_PUBLIC_SIZE],
     const uint8_t private_key[GOST3410_512_KEY_SIZE]);

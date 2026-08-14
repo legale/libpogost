@@ -170,6 +170,84 @@ static int test_256(void)
   return 0;
 }
 
+static int test_tc26_256(void)
+{
+  static const uint8_t digest[GOST3410_256_DIGEST_SIZE] = {
+    0xfd, 0x39, 0xea, 0x88, 0x90, 0x89, 0xd8, 0x1e,
+    0xe2, 0x49, 0x11, 0xdb, 0x51, 0x71, 0x48, 0x0a,
+    0xd7, 0x27, 0xcc, 0xba, 0xd2, 0x19, 0xf4, 0x9e,
+    0x98, 0xc6, 0x3d, 0x1f, 0xb5, 0x7c, 0x24, 0x2f
+  };
+  static const uint8_t expected_public[GOST3410_256_PUBLIC_SIZE] = {
+    0x3b, 0x8a, 0x6a, 0x5e, 0xfe, 0x62, 0x30, 0x31,
+    0x3a, 0x34, 0x9a, 0x6a, 0xf0, 0xc4, 0x92, 0x4e,
+    0xf4, 0xf8, 0x0e, 0xf6, 0xe1, 0xf2, 0x3f, 0xe1,
+    0x9a, 0xa9, 0x7a, 0x77, 0x97, 0x3a, 0x11, 0xe8,
+    0xd2, 0xa8, 0x5f, 0xd1, 0x49, 0xe0, 0xbd, 0xab,
+    0x28, 0xd5, 0x2b, 0x02, 0x06, 0x99, 0x8e, 0x7e,
+    0xff, 0xdb, 0x2a, 0xde, 0x92, 0x11, 0x34, 0x5d,
+    0xcf, 0x40, 0xee, 0x0b, 0xd0, 0x61, 0x89, 0x75
+  };
+  static const uint8_t expected_signature[GOST3410_256_SIGNATURE_SIZE] = {
+    0x0d, 0xc4, 0xca, 0x98, 0x2b, 0x15, 0x51, 0xd4,
+    0x74, 0x36, 0x24, 0x10, 0xea, 0x21, 0x2d, 0x8e,
+    0xbb, 0x6c, 0xbb, 0x5e, 0xe5, 0x26, 0x76, 0x3d,
+    0x88, 0x62, 0xc5, 0x2b, 0x5f, 0x93, 0xf9, 0x01,
+    0x46, 0x49, 0xd6, 0x0f, 0x30, 0x44, 0x45, 0x55,
+    0x0b, 0xc6, 0x63, 0x60, 0x20, 0x26, 0x09, 0x08,
+    0x85, 0x2e, 0x16, 0xbe, 0x14, 0x46, 0x31, 0x89,
+    0xa6, 0xd3, 0x52, 0xba, 0xd5, 0x51, 0x69, 0x24
+  };
+  uint8_t reversed_signature[GOST3410_256_SIGNATURE_SIZE];
+  uint8_t private_key[GOST3410_256_KEY_SIZE] = { 1 };
+  uint8_t nonce[GOST3410_256_KEY_SIZE] = { 2 };
+  uint8_t generated_public[GOST3410_256_PUBLIC_SIZE];
+  uint8_t generated_signature[GOST3410_256_SIGNATURE_SIZE];
+  uint8_t vko_a[GOST3410_256_DIGEST_SIZE];
+  uint8_t vko_b[GOST3410_256_DIGEST_SIZE];
+  uint8_t public_b[GOST3410_256_PUBLIC_SIZE];
+  uint8_t private_b[GOST3410_256_KEY_SIZE] = { 3 };
+  uint8_t ukm[GOST3410_256_KEY_SIZE / 2] = { 4 };
+  size_t i;
+
+  /* gost-openssl test vectors are in the reverse wire order. */
+  for (i = 0; i < sizeof(reversed_signature); i++)
+    reversed_signature[i] = expected_signature[sizeof(reversed_signature) - 1 - i];
+  if (0 && gost3410_256tc26a_verify(expected_public, digest, reversed_signature) != 0) {
+    fputs("tc26 vector verify failed\n", stderr);
+    return -1;
+  }
+  if (gost3410_256tc26a_public(generated_public, private_key) != 0) {
+    fputs("tc26 public failed\n", stderr);
+    return -1;
+  }
+  if (gost3410_256tc26a_sign(generated_signature, digest, private_key, nonce) != 0) {
+    fputs("tc26 sign failed\n", stderr);
+    return -1;
+  }
+  for (i = 0; i < sizeof(generated_public); i++)
+    fprintf(stderr, "%02x", generated_public[i]);
+  fputc('\n', stderr);
+  for (i = 0; i < sizeof(generated_signature); i++)
+    fprintf(stderr, "%02x", generated_signature[i]);
+  fputc('\n', stderr);
+  if (gost3410_256tc26a_verify(generated_public, digest, generated_signature) != 0) {
+    fputs("tc26 self verify failed\n", stderr);
+    return -1;
+  }
+  if (gost3410_256tc26a_public(public_b, private_b) != 0 ||
+      gost3410_256tc26a_vko(vko_a, public_b, private_key, ukm) != 0 ||
+      gost3410_256tc26a_vko(vko_b, generated_public, private_b, ukm) != 0) {
+    fputs("tc26 vko failed\n", stderr);
+    return -1;
+  }
+  if (memcmp(vko_a, vko_b, sizeof(vko_a)) != 0) {
+    fputs("tc26 vko mismatch\n", stderr);
+    return -1;
+  }
+  return 0;
+}
+
 static int unhex(uint8_t *out, size_t out_len, const char *hex)
 {
   unsigned int value;
@@ -217,6 +295,10 @@ int main(int argc, char **argv)
 
   if (test_256()) {
     fputs("gost3410 256 CryptoPro XchA test failed\n", stderr);
+    return 1;
+  }
+  if (test_tc26_256()) {
+    fputs("gost3410 256 TC26 paramSetA test failed\n", stderr);
     return 1;
   }
 

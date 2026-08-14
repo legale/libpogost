@@ -19,6 +19,7 @@
 - Streebog-256 и Streebog-512;
 - ГОСТ Р 34.10-2012/256: открытый ключ, подпись и проверка на CryptoPro
   XchA paramSet;
+- ГОСТ Р 34.10-2012/256 на TC26 paramSetA;
 - ГОСТ Р 34.10-2012/512: открытый ключ, подпись, проверка и VKO на paramSetA;
 - Kuznyechik, OMAC, CTR-ACPKM и KExp15/KImp15;
 - HMAC, KDF_TREE, TLS PRF и TLSTREE для TLS-ГОСТ.

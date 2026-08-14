@@ -10,6 +10,7 @@ LIB = libpogost.a
 LIB_OBJS = $(BUILD_DIR)/kuznyechik.o \
 	$(BUILD_DIR)/generic/ecc_generic.o \
 	$(BUILD_DIR)/generic/gost3410_256_generic.o \
+	$(BUILD_DIR)/generic/gost3410_256_tc26_generic.o \
 	$(BUILD_DIR)/generic/gost3410_generic.o \
 	$(BUILD_DIR)/generic/gost_tls_generic.o \
 	$(BUILD_DIR)/generic/kuznyechik_generic.o \
