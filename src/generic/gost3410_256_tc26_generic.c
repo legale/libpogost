@@ -64,7 +64,6 @@ static void vli_to_le(uint8_t *out, const u64 *in)
     for (j = 0; j < 8; j++)
       out[i * 8 + j] = (uint8_t)(in[i] >> (j * 8));
 }
-
 static void vli_to_be(uint8_t *out, const u64 *in)
 {
   uint8_t tmp[GOST3410_256_KEY_SIZE];
@@ -362,6 +361,8 @@ int gost3410_256tc26a_vko(
   u64 qy[NDIGITS];
   u64 d[NDIGITS];
   u64 u[NDIGITS] = { 0 };
+  u64 h[NDIGITS] = { 4 };
+  u64 t[NDIGITS];
   u64 scalar[NDIGITS];
   u64 x[NDIGITS];
   u64 y[NDIGITS];
@@ -376,7 +377,8 @@ int gost3410_256tc26a_vko(
       !scalar_valid(d) || vli_is_zero(u, NDIGITS))
     return -1;
 
-  vli_mod_mult_slow(scalar, d, u, curve.n, NDIGITS);
+  vli_mod_mult_slow(t, d, u, curve.n, NDIGITS);
+  vli_mod_mult_slow(scalar, t, h, curve.n, NDIGITS);
   if (vli_is_zero(scalar, NDIGITS))
     return -1;
   point_mult(&q, &q, scalar);
