@@ -21,6 +21,20 @@ LIB_OBJS = $(BUILD_DIR)/kuznyechik.o \
 	$(BUILD_DIR)/generic/pbkdf2_generic.o \
 	$(BUILD_DIR)/generic/pfx_generic.o \
 	$(BUILD_DIR)/generic/streebog_generic.o \
+	$(BUILD_DIR)/generic/blake2s_api.o \
+	$(BUILD_DIR)/generic/blake2s_generic.o \
+	$(BUILD_DIR)/generic/chacha_api.o \
+	$(BUILD_DIR)/generic/chacha_block_generic.o \
+	$(BUILD_DIR)/generic/chacha_generic.o \
+	$(BUILD_DIR)/generic/poly1305_generic.o \
+	$(BUILD_DIR)/generic/poly1305_donna64.o \
+	$(BUILD_DIR)/generic/poly1305_donna32.o \
+	$(BUILD_DIR)/generic/chacha20poly1305_generic.o \
+	$(BUILD_DIR)/generic/curve25519_generic.o \
+	$(BUILD_DIR)/generic/curve25519_hacl64.o \
+	$(BUILD_DIR)/generic/curve25519_fiat32.o \
+	$(BUILD_DIR)/generic/memory.o \
+	$(BUILD_DIR)/xoshiro256pp.o \
 	$(BUILD_DIR)/optimized/gost3410_256a.o
 
 ifeq ($(shell uname -m),x86_64)
@@ -35,7 +49,8 @@ TESTS = $(BUILD_DIR)/test_gost28147 $(BUILD_DIR)/test_gost3410 \
 	$(BUILD_DIR)/test_pfx \
 	$(BUILD_DIR)/test_pfx_compat \
 	$(BUILD_DIR)/test_kuznyechik \
-	$(BUILD_DIR)/test_streebog
+	$(BUILD_DIR)/test_streebog \
+	$(BUILD_DIR)/test_noise_crypto
 
 .PHONY: all static test san clean
 

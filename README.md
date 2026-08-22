@@ -1,10 +1,10 @@
 # libpogost
 
-Единая статическая библиотека чистой ГОСТ-криптографии без зависимостей.
+Единая статическая библиотека криптографических примитивов без зависимостей.
 
 Библиотека является общим источником криптографических алгоритмов для
-`l2tap`, `hostap`, `wnam2` и других потребителей. Если прямое подключение
-библиотеки невозможно, потребитель использует точную копию её исходников.
+`l2tap`, `hostap`, `wnam2` и других потребителей. Один и тот же crypto core
+собирается для userspace и Linux kernel.
 
 Основные требования:
 
@@ -22,7 +22,11 @@
 - ГОСТ Р 34.10-2012/256 на TC26 paramSetA;
 - ГОСТ Р 34.10-2012/512: открытый ключ, подпись, проверка и VKO на paramSetA;
 - Kuznyechik, OMAC, CTR-ACPKM и KExp15/KImp15;
-- HMAC, KDF_TREE, TLS PRF и TLSTREE для TLS-ГОСТ.
+- HMAC, KDF_TREE, TLS PRF и TLSTREE для TLS-ГОСТ;
+- BLAKE2s, ChaCha20, Poly1305, ChaCha20-Poly1305, XChaCha20-Poly1305 и Curve25519.
+
+Generic Noise-примитивы перенесены из Linux 7.2; userspace compatibility слой
+повторяет необходимые kernel helpers.
 
 Для CryptoPro XchA используется ECCKiila/Fiat backend при наличии
 `__int128`; на остальных платформах остаётся generic ECC fallback.
