@@ -26,14 +26,14 @@
 #include <limits.h>
 #include <string.h>
 
-typedef u32 __le32;
-typedef u64 __le64;
-
 #ifndef __always_inline
-#define __always_inline inline __attribute__((always_inline))
+#define __always_inline inline __attribute__((always_inline, unused))
 #endif
 #ifndef __maybe_unused
 #define __maybe_unused __attribute__((unused))
+#endif
+#ifndef noinline
+#define noinline __attribute__((noinline))
 #endif
 #define __aligned(x) __attribute__((aligned(x)))
 #define __must_check __attribute__((warn_unused_result))
@@ -53,29 +53,29 @@ typedef u64 __le64;
 #define MODULE_DESCRIPTION(x)
 #define MODULE_AUTHOR(x)
 
-static __always_inline u32 ror32(u32 x, unsigned int n)
+static __maybe_unused __always_inline u32 ror32(u32 x, unsigned int n)
 {
 	return (x >> n) | (x << (32 - n));
 }
 
-static __always_inline u32 rol32(u32 x, unsigned int n)
+static __maybe_unused __always_inline u32 rol32(u32 x, unsigned int n)
 {
 	return (x << n) | (x >> (32 - n));
 }
 
-static __always_inline u32 get_unaligned_le32(const void *p)
+static __maybe_unused __always_inline u32 get_unaligned_le32(const void *p)
 {
 	const u8 *b = p;
 	return (u32)b[0] | (u32)b[1] << 8 | (u32)b[2] << 16 | (u32)b[3] << 24;
 }
 
-static __always_inline u64 get_unaligned_le64(const void *p)
+static __maybe_unused __always_inline u64 get_unaligned_le64(const void *p)
 {
 	const u8 *b = p;
 	return (u64)get_unaligned_le32(b) | (u64)get_unaligned_le32(b + 4) << 32;
 }
 
-static __always_inline void put_unaligned_le32(u32 v, void *p)
+static __maybe_unused __always_inline void put_unaligned_le32(u32 v, void *p)
 {
 	u8 *b = p;
 	b[0] = v;
@@ -84,13 +84,13 @@ static __always_inline void put_unaligned_le32(u32 v, void *p)
 	b[3] = v >> 24;
 }
 
-static __always_inline void put_unaligned_le64(u64 v, void *p)
+static __maybe_unused __always_inline void put_unaligned_le64(u64 v, void *p)
 {
 	put_unaligned_le32((u32)v, p);
 	put_unaligned_le32((u32)(v >> 32), (u8 *)p + 4);
 }
 
-static __always_inline u64 cpu_to_le64(u64 v)
+static __maybe_unused __always_inline u64 cpu_to_le64(u64 v)
 {
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 	return v;
@@ -99,7 +99,7 @@ static __always_inline u64 cpu_to_le64(u64 v)
 #endif
 }
 
-static __always_inline void le32_to_cpu_array(u32 *p, unsigned int n)
+static __maybe_unused __always_inline void le32_to_cpu_array(u32 *p, unsigned int n)
 {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 	while (n--) { *p = __builtin_bswap32(*p); p++; }
@@ -108,26 +108,26 @@ static __always_inline void le32_to_cpu_array(u32 *p, unsigned int n)
 #endif
 }
 
-static __always_inline void cpu_to_le32_array(u32 *p, unsigned int n)
+static __maybe_unused __always_inline void cpu_to_le32_array(u32 *p, unsigned int n)
 {
 	le32_to_cpu_array(p, n);
 }
 
-static __always_inline void memzero_explicit(void *p, size_t n)
+static __maybe_unused __always_inline void memzero_explicit(void *p, size_t n)
 {
 	volatile u8 *v = p;
 	while (n--)
 		*v++ = 0;
 }
 
-static __always_inline void crypto_xor_cpy(u8 *dst, const u8 *a,
+static __maybe_unused __always_inline void crypto_xor_cpy(u8 *dst, const u8 *a,
 					   const u8 *b, size_t n)
 {
 	while (n--)
 		*dst++ = *a++ ^ *b++;
 }
 
-static __always_inline int crypto_memneq(const void *a, const void *b, size_t n)
+static __maybe_unused __always_inline int crypto_memneq(const void *a, const void *b, size_t n)
 {
 	const u8 *x = a, *y = b;
 	u8 d = 0;
