@@ -25,6 +25,12 @@
 #else
 #include <limits.h>
 #include <string.h>
+#if defined(__linux__) || defined(__ANDROID__)
+#include <linux/types.h>
+#else
+typedef u32 __le32;
+typedef u64 __le64;
+#endif
 
 #ifndef __always_inline
 #define __always_inline inline __attribute__((always_inline, unused))
