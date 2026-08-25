@@ -33,6 +33,7 @@ TESTS = $(BUILD_DIR)/test_gost28147 $(BUILD_DIR)/test_gost3410 \
 	$(BUILD_DIR)/test_hmac_streebog $(BUILD_DIR)/test_pbkdf2 \
 	$(BUILD_DIR)/test_cryptopro_keybag \
 	$(BUILD_DIR)/test_pfx \
+	$(BUILD_DIR)/test_pfx_compat \
 	$(BUILD_DIR)/test_kuznyechik \
 	$(BUILD_DIR)/test_streebog
 
