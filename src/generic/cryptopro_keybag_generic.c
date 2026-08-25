@@ -43,7 +43,8 @@ int cryptopro_keybag_kdf(uint8_t out[32],
   return 0;
 }
 
-int cryptopro_keybag_wrap(uint8_t *out, const uint8_t *in, size_t len,
+int cryptopro_keybag_wrap(uint8_t *out, uint8_t mac[4],
+                          const uint8_t *in, size_t len,
                           const uint8_t key[32],
                           const uint8_t *ukm, size_t ukm_len, int enc)
 {
@@ -51,9 +52,11 @@ int cryptopro_keybag_wrap(uint8_t *out, const uint8_t *in, size_t len,
   struct gost28147_state st;
   uint8_t ke[32];
   size_t off;
+  int ret = -1;
 
-  if (!out || !in || !key || !ukm || (len != 32 && len != 64) ||
-      !ukm_len || ukm_len > 255 || (enc != 0 && enc != 1)) {
+  if (!out || !mac || !in || !key || !ukm ||
+      (len != 32 && len != 64) || ukm_len != 8 ||
+      (enc != 0 && enc != 1)) {
     return -1;
   }
   if (gost_kdf_tree_256(ke, sizeof(ke), key, 32, label, sizeof(label),
@@ -69,9 +72,14 @@ int cryptopro_keybag_wrap(uint8_t *out, const uint8_t *in, size_t len,
       gost28147_decrypt_raw(&st, out + off, in + off);
     }
   }
+  if (gost28147_mac4_raw(&st, mac, ukm, enc ? in : out, len)) {
+    goto out;
+  }
+  ret = 0;
+out:
   memzero(ke, sizeof(ke));
   memzero(&st, sizeof(st));
-  return 0;
+  return ret;
 }
 
 int cryptopro_keybag_blob_crypt(uint8_t *out, const uint8_t *in, size_t len,

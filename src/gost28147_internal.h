@@ -20,6 +20,8 @@ void gost28147_encrypt_raw(const struct gost28147_state *st, uint8_t out[8],
                            const uint8_t in[8]);
 void gost28147_decrypt_raw(const struct gost28147_state *st, uint8_t out[8],
                            const uint8_t in[8]);
+int gost28147_mac4_raw(const struct gost28147_state *st, uint8_t out[4],
+                       const uint8_t iv[8], const uint8_t *in, size_t len);
 int gost28147_cfb_crypt(struct gost28147_state *st, uint8_t *out,
                         const uint8_t *in, size_t len, const uint8_t iv[8],
                         int enc, int mesh);

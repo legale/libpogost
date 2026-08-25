@@ -34,6 +34,10 @@ static const uint8_t cp80_wrap_expected[32] = {
   0xa8, 0x0b, 0xfb, 0x6d, 0x0a, 0xb9, 0x17, 0xf5,
 };
 
+static const uint8_t cp80_mac_expected[GOST_PFX_CP80_MAC_SIZE] = {
+  0xcf, 0x2a, 0x3b, 0xe2,
+};
+
 static const uint8_t cp80_blob_expected[32] = {
   0x13, 0x86, 0x4c, 0xc2, 0xc7, 0xbc, 0x69, 0x4c,
   0x9e, 0x5c, 0x2c, 0xfa, 0x15, 0x60, 0xa5, 0x4d,
@@ -57,6 +61,7 @@ int main(void)
   };
   uint8_t raw[32];
   uint8_t out[64];
+  uint8_t cp80_mac[GOST_PFX_CP80_MAC_SIZE];
   size_t i;
 
   if (gost_pfx_mac(out, data, sizeof(data) - 1, pass, sizeof(pass) - 1,
@@ -79,10 +84,11 @@ int main(void)
   for (i = 0; i < 32; i++) {
     raw[i] = i;
   }
-  if (gost_pfx_cp80_wrap(out, raw, 32, cp80_pass, sizeof(cp80_pass),
-                         cp80_salt, sizeof(cp80_salt), 2000,
-                         cp80_ukm, sizeof(cp80_ukm)) ||
-      memcmp(out, cp80_wrap_expected, sizeof(cp80_wrap_expected))) {
+  if (gost_pfx_cp80_wrap(out, cp80_mac, raw, 32,
+                         cp80_pass, sizeof(cp80_pass),
+                         cp80_salt, sizeof(cp80_salt), 2000, cp80_ukm) ||
+      memcmp(out, cp80_wrap_expected, sizeof(cp80_wrap_expected)) ||
+      memcmp(cp80_mac, cp80_mac_expected, sizeof(cp80_mac))) {
     fprintf(stderr, "pfx cp80 wrap failed\n");
     return 1;
   }

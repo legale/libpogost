@@ -208,6 +208,37 @@ void gost28147_decrypt_raw(const struct gost28147_state *st, uint8_t out[8],
   crypt(st, out, in, 1);
 }
 
+int gost28147_mac4_raw(const struct gost28147_state *st, uint8_t out[4],
+                       const uint8_t iv[8], const uint8_t *in, size_t len)
+{
+  uint8_t mac[8];
+  size_t off;
+
+  if (!st || !out || !iv || !in || !len || len % 8) {
+    return -1;
+  }
+
+  memcpy(mac, iv, sizeof(mac));
+  for (off = 0; off < len; off += 8) {
+    uint32_t n1 = get_le32(mac) ^ get_le32(in + off);
+    uint32_t n2 = get_le32(mac + 4) ^ get_le32(in + off + 4);
+    unsigned int r;
+
+    for (r = 0; r < 16; r++) {
+      if (r & 1) {
+        n1 ^= subst(st, n2 + st->key[r & 7]);
+      } else {
+        n2 ^= subst(st, n1 + st->key[r & 7]);
+      }
+    }
+    put_le32(mac, n1);
+    put_le32(mac + 4, n2);
+  }
+  memcpy(out, mac, 4);
+  memset(mac, 0, sizeof(mac));
+  return 0;
+}
+
 static struct gost28147_state *state(struct gost28147_ctx *ctx)
 {
   return (struct gost28147_state *)ctx;

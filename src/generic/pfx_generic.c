@@ -71,21 +71,23 @@ int gost_pfx_mac(uint8_t out[GOST_PFX_MAC_SIZE],
                              salt, salt_len, iter);
 }
 
-int gost_pfx_cp80_wrap(uint8_t *out, const uint8_t *raw_key, size_t key_len,
+int gost_pfx_cp80_wrap(uint8_t *enc,
+                       uint8_t mac[GOST_PFX_CP80_MAC_SIZE],
+                       const uint8_t *raw_key, size_t key_len,
                        const uint8_t *pass_utf16le, size_t pass_len,
                        const uint8_t *salt, size_t salt_len, uint32_t iter,
-                       const uint8_t *ukm, size_t ukm_len)
+                       const uint8_t ukm[8])
 {
   uint8_t key[32];
   int ret;
 
-  if (!out || !raw_key || !salt || !ukm) {
+  if (!enc || !mac || !raw_key || !salt || !ukm) {
     return -1;
   }
   if (cryptopro_keybag_kdf(key, pass_utf16le, pass_len, salt, salt_len, iter)) {
     return -1;
   }
-  ret = cryptopro_keybag_wrap(out, raw_key, key_len, key, ukm, ukm_len, 1);
+  ret = cryptopro_keybag_wrap(enc, mac, raw_key, key_len, key, ukm, 8, 1);
   memzero(key, sizeof(key));
   return ret;
 }

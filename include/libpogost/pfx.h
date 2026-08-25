@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #define GOST_PFX_MAC_SIZE 64
+#define GOST_PFX_CP80_MAC_SIZE 4
 
 /* pass_utf8 is fed to PBKDF2 as-is. */
 int gost_pfx_gost89_encrypt(uint8_t *out, const uint8_t *in, size_t len,
@@ -20,10 +21,12 @@ int gost_pfx_mac(uint8_t out[GOST_PFX_MAC_SIZE],
                  const uint8_t *salt, size_t salt_len, uint32_t iter);
 
 /* OID 1.2.840.113549.1.12.1.80. Password must already be UTF-16LE. */
-int gost_pfx_cp80_wrap(uint8_t *out, const uint8_t *raw_key, size_t key_len,
+int gost_pfx_cp80_wrap(uint8_t *enc,
+                       uint8_t mac[GOST_PFX_CP80_MAC_SIZE],
+                       const uint8_t *raw_key, size_t key_len,
                        const uint8_t *pass_utf16le, size_t pass_len,
                        const uint8_t *salt, size_t salt_len, uint32_t iter,
-                       const uint8_t *ukm, size_t ukm_len);
+                       const uint8_t ukm[8]);
 
 /* Encrypt an already DER-encoded CryptoPro CPBlob bag value. */
 int gost_pfx_cp80_encrypt(uint8_t *out, const uint8_t *blob, size_t blob_len,
