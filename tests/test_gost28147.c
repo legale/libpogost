@@ -1,5 +1,7 @@
 #include <libpogost/gost28147.h>
 
+#include "gost28147_internal.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -20,13 +22,40 @@ static const uint8_t cipher[16] = {
   0xcb, 0x68, 0x85, 0x96, 0x77, 0xe8, 0xfb, 0xa9,
 };
 
+static const uint8_t cfb_key[32] = {
+  0x8d, 0x5a, 0x2c, 0x83, 0xa7, 0xc7, 0x0a, 0x61,
+  0xd6, 0x1b, 0x34, 0xb5, 0x1f, 0xdf, 0x42, 0x68,
+  0x66, 0x71, 0xa3, 0x5d, 0x87, 0x4c, 0xfd, 0x84,
+  0x99, 0x36, 0x63, 0xb6, 0x1e, 0xd6, 0x0d, 0xad,
+};
+
+static const uint8_t cfb_iv[8] = {
+  0x46, 0x60, 0x6f, 0x0d, 0x88, 0x34, 0x23, 0x5a,
+};
+
+static const uint8_t cfb_plain[16] = {
+  0xd2, 0xfd, 0xf8, 0x3a, 0xc1, 0xb4, 0x39, 0x23,
+  0x2e, 0xaa, 0xcc, 0x98, 0x0a, 0x02, 0xda, 0x33,
+};
+
+static const uint8_t cfb_cipher[16] = {
+  0x88, 0xb7, 0x75, 0x16, 0x74, 0xa5, 0xee, 0x2d,
+  0x14, 0xfe, 0x91, 0x67, 0xd0, 0x5c, 0xcc, 0x40,
+};
+
 int main(void)
 {
   struct gost28147_ctx ctx;
+  struct gost28147_state st;
+  uint8_t long_in[1033];
+  uint8_t long_enc[sizeof(long_in)];
+  uint8_t long_out[sizeof(long_in)];
   uint8_t buf[16];
+  size_t i;
 
-  if (gost28147_setkey_cryptopro_a(&ctx, key))
+  if (gost28147_setkey_cryptopro_a(&ctx, key)) {
     return 1;
+  }
   gost28147_encrypt(&ctx, buf, plain);
   gost28147_encrypt(&ctx, buf + 8, plain + 8);
   if (memcmp(buf, cipher, sizeof(buf))) {
@@ -37,6 +66,31 @@ int main(void)
   gost28147_decrypt(&ctx, buf + 8, cipher + 8);
   if (memcmp(buf, plain, sizeof(buf))) {
     fprintf(stderr, "gost28147 decrypt vector failed\n");
+    return 1;
+  }
+
+  gost28147_setkey_raw(&st, cfb_key, gost28147_sbox_cryptopro_a);
+  if (gost28147_cfb_crypt(&st, buf, cfb_plain, sizeof(cfb_plain), cfb_iv, 1, 0)) {
+    return 1;
+  }
+  if (memcmp(buf, cfb_cipher, sizeof(buf))) {
+    fprintf(stderr, "gost28147 cfb vector failed\n");
+    return 1;
+  }
+
+  for (i = 0; i < sizeof(long_in); i++) {
+    long_in[i] = i;
+  }
+  gost28147_setkey_raw(&st, key, gost28147_sbox_tc26_z);
+  if (gost28147_cfb_crypt(&st, long_enc, long_in, sizeof(long_in), cfb_iv, 1, 1)) {
+    return 1;
+  }
+  gost28147_setkey_raw(&st, key, gost28147_sbox_tc26_z);
+  if (gost28147_cfb_crypt(&st, long_out, long_enc, sizeof(long_enc), cfb_iv, 0, 1)) {
+    return 1;
+  }
+  if (memcmp(long_out, long_in, sizeof(long_in))) {
+    fprintf(stderr, "gost28147 cfb key meshing failed\n");
     return 1;
   }
 

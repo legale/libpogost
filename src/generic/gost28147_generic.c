@@ -9,6 +9,8 @@
 
 #include "gost28147_internal.h"
 
+#include <string.h>
+
 
 const uint8_t gost28147_sbox_cryptopro_a[8][16] = {
   { 0xb, 0xa, 0xf, 0x5, 0x0, 0xc, 0xe, 0x8,
@@ -118,6 +120,69 @@ static void crypt(const struct gost28147_state *st, uint8_t out[8],
 
   put_le32(out, n2);
   put_le32(out + 4, n1);
+}
+
+
+static const uint8_t key_mesh_key[32] = {
+  0x69, 0x00, 0x72, 0x22, 0x64, 0xc9, 0x04, 0x23,
+  0x8d, 0x3a, 0xdb, 0x96, 0x46, 0xe9, 0x2a, 0xc4,
+  0x18, 0xfe, 0xac, 0x94, 0x00, 0xed, 0x07, 0x12,
+  0xc0, 0x86, 0xdc, 0xc2, 0xef, 0x4c, 0xa9, 0x2b,
+};
+
+static void key_mesh(struct gost28147_state *st, uint8_t iv[8])
+{
+  uint8_t key[32];
+  uint8_t next_iv[8];
+  const uint8_t (*sbox)[16] = st->sbox;
+  unsigned int i;
+
+  for (i = 0; i < 4; i++) {
+    gost28147_decrypt_raw(st, key + i * 8, key_mesh_key + i * 8);
+  }
+  gost28147_setkey_raw(st, key, sbox);
+  gost28147_encrypt_raw(st, next_iv, iv);
+  memcpy(iv, next_iv, sizeof(next_iv));
+  memset(key, 0, sizeof(key));
+  memset(next_iv, 0, sizeof(next_iv));
+}
+
+int gost28147_cfb_crypt(struct gost28147_state *st, uint8_t *out,
+                        const uint8_t *in, size_t len, const uint8_t iv[8],
+                        int enc, int mesh)
+{
+  uint8_t cur_iv[8];
+  uint8_t gamma[8];
+  size_t off = 0;
+
+  if (!st || !out || (!in && len) || !iv) {
+    return -1;
+  }
+
+  memcpy(cur_iv, iv, sizeof(cur_iv));
+  while (off < len) {
+    size_t n = len - off;
+    size_t i;
+
+    if (mesh && off && !(off % 1024)) {
+      key_mesh(st, cur_iv);
+    }
+    if (n > sizeof(gamma)) {
+      n = sizeof(gamma);
+    }
+    gost28147_encrypt_raw(st, gamma, cur_iv);
+    for (i = 0; i < n; i++) {
+      uint8_t c = in[off + i] ^ gamma[i];
+
+      out[off + i] = c;
+      cur_iv[i] = enc ? c : in[off + i];
+    }
+    off += n;
+  }
+
+  memset(cur_iv, 0, sizeof(cur_iv));
+  memset(gamma, 0, sizeof(gamma));
+  return 0;
 }
 
 void gost28147_setkey_raw(struct gost28147_state *st, const uint8_t key[32],

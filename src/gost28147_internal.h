@@ -2,6 +2,7 @@
 #ifndef LIBPOGOST_GOST28147_INTERNAL_H
 #define LIBPOGOST_GOST28147_INTERNAL_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 struct gost28147_state {
@@ -19,5 +20,8 @@ void gost28147_encrypt_raw(const struct gost28147_state *st, uint8_t out[8],
                            const uint8_t in[8]);
 void gost28147_decrypt_raw(const struct gost28147_state *st, uint8_t out[8],
                            const uint8_t in[8]);
+int gost28147_cfb_crypt(struct gost28147_state *st, uint8_t *out,
+                        const uint8_t *in, size_t len, const uint8_t iv[8],
+                        int enc, int mesh);
 
 #endif
