@@ -8,6 +8,7 @@ CFLAGS ?= -O2 -std=c11 -Wall -Wextra -Werror
 
 LIB = libpogost.a
 LIB_OBJS = $(BUILD_DIR)/kuznyechik.o \
+	$(BUILD_DIR)/generic/gost28147_generic.o \
 	$(BUILD_DIR)/generic/ecc_generic.o \
 	$(BUILD_DIR)/generic/gost3410_256_generic.o \
 	$(BUILD_DIR)/generic/gost3410_256_tc26_generic.o \
@@ -22,7 +23,7 @@ CPPFLAGS += -DLIBPOGOST_HAVE_KUZNYECHIK_SIMD=1
 LIB_OBJS += $(BUILD_DIR)/x86_64/kuznyechik_simd.o \
 	$(BUILD_DIR)/x86_64/kuznyechik_simd_x86_64.o
 endif
-TESTS = $(BUILD_DIR)/test_gost3410 $(BUILD_DIR)/test_gost_tls \
+TESTS = $(BUILD_DIR)/test_gost28147 $(BUILD_DIR)/test_gost3410 $(BUILD_DIR)/test_gost_tls \
 	$(BUILD_DIR)/test_kuznyechik $(BUILD_DIR)/test_streebog
 
 .PHONY: all static test san clean
