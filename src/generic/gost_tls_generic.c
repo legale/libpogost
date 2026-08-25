@@ -3,6 +3,8 @@
 #include <libpogost/kuznyechik.h>
 #include <libpogost/streebog.h>
 
+#include "hmac_streebog_internal.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,49 +17,10 @@ static void memzero(void *ptr, size_t len)
     *p++ = 0;
 }
 
-static void hmac_parts(uint8_t out[32], const uint8_t *key, size_t key_len,
-                       const uint8_t *a, size_t a_len,
-                       const uint8_t *b, size_t b_len,
-                       const uint8_t *c, size_t c_len)
-{
-  struct streebog_ctx ctx;
-  uint8_t key_block[64] = { 0 };
-  uint8_t inner[32];
-  uint8_t pad[64];
-  size_t i;
-
-  if (key_len > sizeof(key_block)) {
-    streebog256(key_block, key, key_len);
-  } else if (key_len) {
-    memcpy(key_block, key, key_len);
-  }
-
-  for (i = 0; i < sizeof(pad); i++)
-    pad[i] = key_block[i] ^ 0x36;
-  streebog_init(&ctx, 256);
-  streebog_update(&ctx, pad, sizeof(pad));
-  streebog_update(&ctx, a, a_len);
-  streebog_update(&ctx, b, b_len);
-  streebog_update(&ctx, c, c_len);
-  streebog_final(&ctx, inner);
-
-  for (i = 0; i < sizeof(pad); i++)
-    pad[i] = key_block[i] ^ 0x5c;
-  streebog_init(&ctx, 256);
-  streebog_update(&ctx, pad, sizeof(pad));
-  streebog_update(&ctx, inner, sizeof(inner));
-  streebog_final(&ctx, out);
-
-  memzero(key_block, sizeof(key_block));
-  memzero(inner, sizeof(inner));
-  memzero(pad, sizeof(pad));
-  memzero(&ctx, sizeof(ctx));
-}
-
 void gost_hmac_streebog256(uint8_t out[32], const uint8_t *key, size_t key_len,
                            const uint8_t *data, size_t data_len)
 {
-  hmac_parts(out, key, key_len, data, data_len, NULL, 0, NULL, 0);
+  hmac_streebog256(out, key, key_len, data, data_len);
 }
 
 static size_t put_be(uint8_t out[sizeof(size_t)], size_t value)
@@ -92,8 +55,9 @@ int gost_kdf_tree_256(uint8_t *out, size_t out_len,
   memcpy(suffix + 1 + seed_len, len_buf, len_len);
 
   for (off = 0, counter = 1; off < out_len; off += 32, counter++)
-    hmac_parts(out + off, key, key_len, &counter, 1, label, label_len,
-               suffix, 1 + seed_len + len_len);
+    hmac_streebog256_parts(out + off, key, key_len, &counter, 1,
+                           label, label_len, suffix,
+                           1 + seed_len + len_len);
 
   memzero(suffix, sizeof(suffix));
   return 0;
@@ -108,16 +72,18 @@ int gost_tls_prf_256(uint8_t *out, size_t out_len,
   size_t label_len = strlen(label);
   size_t take;
 
-  hmac_parts(a, secret, secret_len, (const uint8_t *)label, label_len,
-             seed, seed_len, NULL, 0);
+  hmac_streebog256_parts(a, secret, secret_len,
+                         (const uint8_t *)label, label_len,
+                         seed, seed_len, NULL, 0);
   while (out_len) {
-    hmac_parts(block, secret, secret_len, a, sizeof(a),
-               (const uint8_t *)label, label_len, seed, seed_len);
+    hmac_streebog256_parts(block, secret, secret_len, a, sizeof(a),
+                           (const uint8_t *)label, label_len,
+                           seed, seed_len);
     take = out_len < sizeof(block) ? out_len : sizeof(block);
     memcpy(out, block, take);
     out += take;
     out_len -= take;
-    hmac_parts(a, secret, secret_len, a, sizeof(a), NULL, 0, NULL, 0);
+    hmac_streebog256(a, secret, secret_len, a, sizeof(a));
   }
 
   memzero(a, sizeof(a));
