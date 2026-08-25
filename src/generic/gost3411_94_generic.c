@@ -206,15 +206,29 @@ static void final(struct gost3411_94_ctx *ctx, uint8_t out[32])
   memcpy(out, h, 32);
 }
 
-void gost3411_94_cryptopro(uint8_t out[32], const uint8_t *data, size_t len)
+void gost3411_94_cryptopro_parts(uint8_t out[32],
+                                 const uint8_t *a, size_t a_len,
+                                 const uint8_t *b, size_t b_len,
+                                 const uint8_t *c, size_t c_len)
 {
   struct gost3411_94_ctx ctx;
 
   memset(&ctx, 0, sizeof(ctx));
   ctx.cipher.sbox = gost28147_sbox_cryptopro_3411;
-  if (len) {
-    update(&ctx, data, len);
+  if (a_len) {
+    update(&ctx, a, a_len);
+  }
+  if (b_len) {
+    update(&ctx, b, b_len);
+  }
+  if (c_len) {
+    update(&ctx, c, c_len);
   }
   final(&ctx, out);
   memset(&ctx, 0, sizeof(ctx));
+}
+
+void gost3411_94_cryptopro(uint8_t out[32], const uint8_t *data, size_t len)
+{
+  gost3411_94_cryptopro_parts(out, data, len, NULL, 0, NULL, 0);
 }

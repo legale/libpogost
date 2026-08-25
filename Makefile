@@ -8,6 +8,7 @@ CFLAGS ?= -O2 -std=c11 -Wall -Wextra -Werror
 
 LIB = libpogost.a
 LIB_OBJS = $(BUILD_DIR)/kuznyechik.o \
+	$(BUILD_DIR)/generic/cryptopro_keybag_generic.o \
 	$(BUILD_DIR)/generic/gost28147_generic.o \
 	$(BUILD_DIR)/generic/ecc_generic.o \
 	$(BUILD_DIR)/generic/gost3410_256_generic.o \
@@ -30,6 +31,7 @@ endif
 TESTS = $(BUILD_DIR)/test_gost28147 $(BUILD_DIR)/test_gost3410 \
 	$(BUILD_DIR)/test_gost3411_94 $(BUILD_DIR)/test_gost_tls \
 	$(BUILD_DIR)/test_hmac_streebog $(BUILD_DIR)/test_pbkdf2 \
+	$(BUILD_DIR)/test_cryptopro_keybag \
 	$(BUILD_DIR)/test_pfx \
 	$(BUILD_DIR)/test_kuznyechik \
 	$(BUILD_DIR)/test_streebog
