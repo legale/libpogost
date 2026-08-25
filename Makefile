@@ -17,6 +17,7 @@ LIB_OBJS = $(BUILD_DIR)/kuznyechik.o \
 	$(BUILD_DIR)/generic/hmac_streebog_generic.o \
 	$(BUILD_DIR)/generic/kuznyechik_generic.o \
 	$(BUILD_DIR)/generic/pbkdf2_generic.o \
+	$(BUILD_DIR)/generic/pfx_generic.o \
 	$(BUILD_DIR)/generic/streebog_generic.o \
 	$(BUILD_DIR)/optimized/gost3410_256a.o
 
@@ -27,6 +28,7 @@ LIB_OBJS += $(BUILD_DIR)/x86_64/kuznyechik_simd.o \
 endif
 TESTS = $(BUILD_DIR)/test_gost28147 $(BUILD_DIR)/test_gost3410 $(BUILD_DIR)/test_gost_tls \
 	$(BUILD_DIR)/test_hmac_streebog $(BUILD_DIR)/test_pbkdf2 \
+	$(BUILD_DIR)/test_pfx \
 	$(BUILD_DIR)/test_kuznyechik \
 	$(BUILD_DIR)/test_streebog
 

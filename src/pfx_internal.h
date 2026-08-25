@@ -1,0 +1,13 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+#ifndef LIBPOGOST_PFX_INTERNAL_H
+#define LIBPOGOST_PFX_INTERNAL_H
+
+#include <stddef.h>
+#include <stdint.h>
+
+int pfx_mac_streebog512(uint8_t out[64],
+                         const uint8_t *data, size_t data_len,
+                         const uint8_t *pass, size_t pass_len,
+                         const uint8_t *salt, size_t salt_len, uint32_t iter);
+
+#endif
