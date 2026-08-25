@@ -13,6 +13,7 @@ LIB_OBJS = $(BUILD_DIR)/kuznyechik.o \
 	$(BUILD_DIR)/generic/gost3410_256_generic.o \
 	$(BUILD_DIR)/generic/gost3410_256_tc26_generic.o \
 	$(BUILD_DIR)/generic/gost3410_generic.o \
+	$(BUILD_DIR)/generic/gost3411_94_generic.o \
 	$(BUILD_DIR)/generic/gost_tls_generic.o \
 	$(BUILD_DIR)/generic/hmac_streebog_generic.o \
 	$(BUILD_DIR)/generic/kuznyechik_generic.o \
@@ -26,7 +27,8 @@ CPPFLAGS += -DLIBPOGOST_HAVE_KUZNYECHIK_SIMD=1
 LIB_OBJS += $(BUILD_DIR)/x86_64/kuznyechik_simd.o \
 	$(BUILD_DIR)/x86_64/kuznyechik_simd_x86_64.o
 endif
-TESTS = $(BUILD_DIR)/test_gost28147 $(BUILD_DIR)/test_gost3410 $(BUILD_DIR)/test_gost_tls \
+TESTS = $(BUILD_DIR)/test_gost28147 $(BUILD_DIR)/test_gost3410 \
+	$(BUILD_DIR)/test_gost3411_94 $(BUILD_DIR)/test_gost_tls \
 	$(BUILD_DIR)/test_hmac_streebog $(BUILD_DIR)/test_pbkdf2 \
 	$(BUILD_DIR)/test_pfx \
 	$(BUILD_DIR)/test_kuznyechik \

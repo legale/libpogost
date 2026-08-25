@@ -1,0 +1,27 @@
+#include "gost3411_94_internal.h"
+
+#include <stdio.h>
+#include <string.h>
+
+static const uint8_t expected[32] = {
+  0x58, 0x50, 0x4d, 0x26, 0xb3, 0x67, 0x7e, 0x75,
+  0x6b, 0xa3, 0xf4, 0xa9, 0xfd, 0x2f, 0x14, 0xb3,
+  0xba, 0x54, 0x57, 0x06, 0x6a, 0x4a, 0xa1, 0xd7,
+  0x00, 0x65, 0x9b, 0x90, 0xdc, 0xdd, 0xd3, 0xc6,
+};
+
+int main(void)
+{
+  uint8_t data[64];
+  uint8_t out[32];
+
+  memset(data, 0xff, sizeof(data));
+  gost3411_94_cryptopro(out, data, sizeof(data));
+  if (memcmp(out, expected, sizeof(out))) {
+    fprintf(stderr, "gost3411-94 CryptoPro vector failed\n");
+    return 1;
+  }
+
+  puts("gost3411-94: ok");
+  return 0;
+}
