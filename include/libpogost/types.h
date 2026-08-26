@@ -6,14 +6,14 @@
 #else
 #include <stdbool.h>
 #include <stddef.h>
-typedef unsigned char u8;
-typedef unsigned short u16;
-typedef unsigned int u32;
-typedef unsigned long long u64;
-typedef signed char s8;
-typedef signed short s16;
-typedef signed int s32;
-typedef signed long long s64;
+typedef __UINT8_TYPE__ u8;
+typedef __UINT16_TYPE__ u16;
+typedef __UINT32_TYPE__ u32;
+typedef __UINT64_TYPE__ u64;
+typedef __INT8_TYPE__ s8;
+typedef __INT16_TYPE__ s16;
+typedef __INT32_TYPE__ s32;
+typedef __INT64_TYPE__ s64;
 #ifdef __SIZEOF_INT128__
 typedef unsigned __int128 u128;
 #endif
