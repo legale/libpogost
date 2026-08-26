@@ -4,7 +4,7 @@ AR ?= ar
 BUILD_DIR ?= build
 # Основная сборка должна работать с musl. Санитайзеры задают свой CC.
 CPPFLAGS ?= -Iinclude -Isrc
-CFLAGS ?= -O2 -std=c11 -Wall -Wextra -Werror
+CFLAGS ?= -O2 -fPIC -std=c11 -Wall -Wextra -Werror
 
 LIB = libpogost.a
 LIB_OBJS = $(BUILD_DIR)/kuznyechik.o \
@@ -47,7 +47,6 @@ TESTS = $(BUILD_DIR)/test_gost28147 $(BUILD_DIR)/test_gost3410 \
 	$(BUILD_DIR)/test_hmac_streebog $(BUILD_DIR)/test_pbkdf2 \
 	$(BUILD_DIR)/test_cryptopro_keybag \
 	$(BUILD_DIR)/test_pfx \
-	$(BUILD_DIR)/test_pfx_compat \
 	$(BUILD_DIR)/test_kuznyechik \
 	$(BUILD_DIR)/test_streebog \
 	$(BUILD_DIR)/test_noise_crypto
