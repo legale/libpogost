@@ -1,31 +1,30 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /* ГОСТ Р 34.12-2015 (Kuznyechik), x86-64 SIMD backend. */
 
-#include <stdint.h>
 
 #include <libpogost/kuznyechik.h>
 
 #include "../kuznyechik_internal.h"
 #include "../generic/kuztable.h"
 
-void kuznyechik_simd_encrypt_1way(const uint8_t *key, uint8_t *dst,
-                                 const uint8_t *src, const uint8_t *table);
-void kuznyechik_simd_decrypt_4way(const uint8_t *dekey, uint8_t *dst,
-                                 const uint8_t *src, const uint8_t *inv_table,
-                                 const uint8_t *inv_ls_table);
+void kuznyechik_simd_encrypt_1way(const u8 *key, u8 *dst,
+                                 const u8 *src, const u8 *table);
+void kuznyechik_simd_decrypt_4way(const u8 *dekey, u8 *dst,
+                                 const u8 *src, const u8 *inv_table,
+                                 const u8 *inv_ls_table);
 
 /* Загружаем слово из таблицы без выравнивания и без libc. */
-static uint64_t load_le64(const uint8_t *src)
+static u64 load_le64(const u8 *src)
 {
-  uint64_t value = 0;
+  u64 value = 0;
   unsigned int i;
 
   for (i = 0; i < 8; i++)
-    value |= (uint64_t)src[i] << (i * 8);
+    value |= (u64)src[i] << (i * 8);
   return value;
 }
 
-static void store_le64(uint8_t *dst, uint64_t value)
+static void store_le64(u8 *dst, u64 value)
 {
   unsigned int i;
 
@@ -33,12 +32,12 @@ static void store_le64(uint8_t *dst, uint64_t value)
     dst[i] = value >> (i * 8);
 }
 
-static void kuz_l(uint8_t *out, const uint8_t *in,
-                  const uint8_t table[16][256 * 16])
+static void kuz_l(u8 *out, const u8 *in,
+                  const u8 table[16][256 * 16])
 {
-  uint64_t lo = 0;
-  uint64_t hi = 0;
-  const uint8_t *p;
+  u64 lo = 0;
+  u64 hi = 0;
+  const u8 *p;
   unsigned int i;
 
   for (i = 0; i < KUZNYECHIK_BLOCK_SIZE; i++) {
@@ -50,9 +49,9 @@ static void kuz_l(uint8_t *out, const uint8_t *in,
   store_le64(out + 8, hi);
 }
 
-static void kuz_lsx(uint8_t *out, const uint8_t *in, const uint8_t *key)
+static void kuz_lsx(u8 *out, const u8 *in, const u8 *key)
 {
-  uint8_t block[KUZNYECHIK_BLOCK_SIZE];
+  u8 block[KUZNYECHIK_BLOCK_SIZE];
   unsigned int i;
 
   for (i = 0; i < KUZNYECHIK_BLOCK_SIZE; i++)
@@ -60,9 +59,9 @@ static void kuz_lsx(uint8_t *out, const uint8_t *in, const uint8_t *key)
   kuz_l(out, block, kuz_table);
 }
 
-static void kuz_subkey(uint8_t *out, const uint8_t *key, unsigned int n)
+static void kuz_subkey(u8 *out, const u8 *key, unsigned int n)
 {
-  uint8_t block[KUZNYECHIK_BLOCK_SIZE];
+  u8 block[KUZNYECHIK_BLOCK_SIZE];
 
   kuz_lsx(block, key, kuz_key_table[n]);
   kuznyechik_xor_copy(out + 16, block, key + 16, 16);
@@ -83,7 +82,7 @@ static void kuz_subkey(uint8_t *out, const uint8_t *key, unsigned int n)
 }
 
 static int kuz_expand_key(struct kuznyechik_state *state,
-                          const uint8_t key[KUZNYECHIK_KEY_SIZE])
+                          const u8 key[KUZNYECHIK_KEY_SIZE])
 {
   unsigned int i;
 
@@ -100,7 +99,7 @@ static int kuz_expand_key(struct kuznyechik_state *state,
 }
 
 int kuznyechik_simd_setkey(struct kuznyechik_ctx *ctx,
-                          const uint8_t key[KUZNYECHIK_KEY_SIZE])
+                          const u8 key[KUZNYECHIK_KEY_SIZE])
 {
   if (!ctx)
     return -1;
@@ -108,28 +107,28 @@ int kuznyechik_simd_setkey(struct kuznyechik_ctx *ctx,
 }
 
 void kuznyechik_simd_encrypt(const struct kuznyechik_ctx *ctx,
-                            uint8_t out[KUZNYECHIK_BLOCK_SIZE],
-                            const uint8_t in[KUZNYECHIK_BLOCK_SIZE])
+                            u8 out[KUZNYECHIK_BLOCK_SIZE],
+                            const u8 in[KUZNYECHIK_BLOCK_SIZE])
 {
   const struct kuznyechik_state *state = kuznyechik_const_state(ctx);
 
   kuznyechik_simd_encrypt_1way(state->key, out, in,
-                              (const uint8_t *)kuz_table);
+                              (const u8 *)kuz_table);
 }
 
 void kuznyechik_simd_decrypt(const struct kuznyechik_ctx *ctx,
-                            uint8_t out[KUZNYECHIK_BLOCK_SIZE],
-                            const uint8_t in[KUZNYECHIK_BLOCK_SIZE])
+                            u8 out[KUZNYECHIK_BLOCK_SIZE],
+                            const u8 in[KUZNYECHIK_BLOCK_SIZE])
 {
   const struct kuznyechik_state *state = kuznyechik_const_state(ctx);
-  uint8_t input[64] = { 0 };
-  uint8_t output[64];
+  u8 input[64] = { 0 };
+  u8 output[64];
   unsigned int i;
 
   kuznyechik_copy(input, in, KUZNYECHIK_BLOCK_SIZE);
   kuznyechik_simd_decrypt_4way(state->dekey, output, input,
-                              (const uint8_t *)kuz_table_inv,
-                              (const uint8_t *)kuz_table_inv_LS);
+                              (const u8 *)kuz_table_inv,
+                              (const u8 *)kuz_table_inv_LS);
   for (i = 0; i < KUZNYECHIK_BLOCK_SIZE; i++)
     out[i] = pi_inv[output[i]] ^ state->key[i];
 }

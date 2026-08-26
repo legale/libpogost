@@ -12,8 +12,8 @@
 #define SALT_LEN 8
 #define ITER 2048
 
-static const uint8_t auth_hdr[] = { 0x30, 0x82, 0x0a, 0x00 };
-static const uint8_t mac_expected[64] = {
+static const u8 auth_hdr[] = { 0x30, 0x82, 0x0a, 0x00 };
+static const u8 mac_expected[64] = {
   0xdb, 0x17, 0x07, 0xc2, 0x7d, 0x57, 0xbf, 0xb6,
   0x19, 0xbf, 0x2c, 0x2b, 0x26, 0xa9, 0x6d, 0xed,
   0xbb, 0x61, 0x4e, 0xcd, 0x04, 0x0e, 0x1e, 0x7a,
@@ -26,9 +26,9 @@ static const uint8_t mac_expected[64] = {
 
 int main(void)
 {
-  static const uint8_t pass[] = "123456";
-  uint8_t pfx[PFX_SIZE];
-  uint8_t mac[GOST_PFX_MAC_SIZE];
+  static const u8 pass[] = "123456";
+  u8 pfx[PFX_SIZE];
+  u8 mac[GOST_PFX_MAC_SIZE];
   FILE *f;
 
   f = fopen(PFX_PATH, "rb");

@@ -55,18 +55,18 @@ static struct ecc_curve curve = {
   .b = curve_b
 };
 
-static void vli_to_le(uint8_t *out, const u64 *in)
+static void vli_to_le(u8 *out, const u64 *in)
 {
   unsigned int i;
   unsigned int j;
 
   for (i = 0; i < NDIGITS; i++)
     for (j = 0; j < 8; j++)
-      out[i * 8 + j] = (uint8_t)(in[i] >> (j * 8));
+      out[i * 8 + j] = (u8)(in[i] >> (j * 8));
 }
-static void vli_to_be(uint8_t *out, const u64 *in)
+static void vli_to_be(u8 *out, const u64 *in)
 {
-  uint8_t tmp[GOST3410_256_KEY_SIZE];
+  u8 tmp[GOST3410_256_KEY_SIZE];
   unsigned int i;
 
   vli_to_le(tmp, in);
@@ -234,7 +234,7 @@ static void scalar_reduce(u64 *v)
     vli_sub(v, v, curve.n, NDIGITS);
 }
 
-static void digest_scalar(u64 *e, const uint8_t *digest)
+static void digest_scalar(u64 *e, const u8 *digest)
 {
   vli_from_le64(e, digest, NDIGITS);
   scalar_reduce(e);
@@ -243,8 +243,8 @@ static void digest_scalar(u64 *e, const uint8_t *digest)
 }
 
 int gost3410_256tc26a_public(
-    uint8_t public_key[GOST3410_256_PUBLIC_SIZE],
-    const uint8_t private_key[GOST3410_256_KEY_SIZE])
+    u8 public_key[GOST3410_256_PUBLIC_SIZE],
+    const u8 private_key[GOST3410_256_KEY_SIZE])
 {
   u64 d[NDIGITS];
   u64 x[NDIGITS];
@@ -263,10 +263,10 @@ int gost3410_256tc26a_public(
 }
 
 int gost3410_256tc26a_sign(
-    uint8_t signature[GOST3410_256_SIGNATURE_SIZE],
-    const uint8_t digest[GOST3410_256_DIGEST_SIZE],
-    const uint8_t private_key[GOST3410_256_KEY_SIZE],
-    const uint8_t nonce[GOST3410_256_KEY_SIZE])
+    u8 signature[GOST3410_256_SIGNATURE_SIZE],
+    const u8 digest[GOST3410_256_DIGEST_SIZE],
+    const u8 private_key[GOST3410_256_KEY_SIZE],
+    const u8 nonce[GOST3410_256_KEY_SIZE])
 {
   u64 d[NDIGITS];
   u64 e[NDIGITS];
@@ -306,9 +306,9 @@ int gost3410_256tc26a_sign(
 }
 
 int gost3410_256tc26a_verify(
-    const uint8_t public_key[GOST3410_256_PUBLIC_SIZE],
-    const uint8_t digest[GOST3410_256_DIGEST_SIZE],
-    const uint8_t signature[GOST3410_256_SIGNATURE_SIZE])
+    const u8 public_key[GOST3410_256_PUBLIC_SIZE],
+    const u8 digest[GOST3410_256_DIGEST_SIZE],
+    const u8 signature[GOST3410_256_SIGNATURE_SIZE])
 {
   u64 qx[NDIGITS];
   u64 qy[NDIGITS];
@@ -352,10 +352,10 @@ int gost3410_256tc26a_verify(
 }
 
 int gost3410_256tc26a_vko(
-    uint8_t shared_key[GOST3410_256_DIGEST_SIZE],
-    const uint8_t public_key[GOST3410_256_PUBLIC_SIZE],
-    const uint8_t private_key[GOST3410_256_KEY_SIZE],
-    const uint8_t ukm[GOST3410_256_KEY_SIZE / 2])
+    u8 shared_key[GOST3410_256_DIGEST_SIZE],
+    const u8 public_key[GOST3410_256_PUBLIC_SIZE],
+    const u8 private_key[GOST3410_256_KEY_SIZE],
+    const u8 ukm[GOST3410_256_KEY_SIZE / 2])
 {
   u64 qx[NDIGITS];
   u64 qy[NDIGITS];
@@ -366,7 +366,7 @@ int gost3410_256tc26a_vko(
   u64 scalar[NDIGITS];
   u64 x[NDIGITS];
   u64 y[NDIGITS];
-  uint8_t secret[GOST3410_256_PUBLIC_SIZE];
+  u8 secret[GOST3410_256_PUBLIC_SIZE];
   struct ecc_point q = ECC_POINT_INIT(qx, qy, NDIGITS);
 
   vli_from_le64(qx, public_key, NDIGITS);

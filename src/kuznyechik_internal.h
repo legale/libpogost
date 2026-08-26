@@ -8,8 +8,8 @@
 
 struct kuznyechik_state {
   /* Десять ключей для прямого и обратного прохода. */
-  uint8_t key[KUZNYECHIK_SUBKEYS_SIZE];
-  uint8_t dekey[KUZNYECHIK_SUBKEYS_SIZE];
+  u8 key[KUZNYECHIK_SUBKEYS_SIZE];
+  u8 dekey[KUZNYECHIK_SUBKEYS_SIZE];
 };
 
 static inline struct kuznyechik_state *kuznyechik_state(
@@ -25,7 +25,7 @@ static inline const struct kuznyechik_state *kuznyechik_const_state(
   return (const struct kuznyechik_state *)ctx->opaque;
 }
 
-static inline void kuznyechik_copy(uint8_t *dst, const uint8_t *src,
+static inline void kuznyechik_copy(u8 *dst, const u8 *src,
                                   unsigned int len)
 {
   unsigned int i;
@@ -34,7 +34,7 @@ static inline void kuznyechik_copy(uint8_t *dst, const uint8_t *src,
     dst[i] = src[i];
 }
 
-static inline void kuznyechik_xor(uint8_t *dst, const uint8_t *src,
+static inline void kuznyechik_xor(u8 *dst, const u8 *src,
                                  unsigned int len)
 {
   unsigned int i;
@@ -43,8 +43,8 @@ static inline void kuznyechik_xor(uint8_t *dst, const uint8_t *src,
     dst[i] ^= src[i];
 }
 
-static inline void kuznyechik_xor_copy(uint8_t *dst, const uint8_t *src1,
-                                      const uint8_t *src2, unsigned int len)
+static inline void kuznyechik_xor_copy(u8 *dst, const u8 *src1,
+                                      const u8 *src2, unsigned int len)
 {
   unsigned int i;
 
@@ -53,20 +53,20 @@ static inline void kuznyechik_xor_copy(uint8_t *dst, const uint8_t *src1,
 }
 
 int kuznyechik_generic_setkey(struct kuznyechik_ctx *ctx,
-                             const uint8_t key[KUZNYECHIK_KEY_SIZE]);
+                             const u8 key[KUZNYECHIK_KEY_SIZE]);
 void kuznyechik_generic_encrypt(const struct kuznyechik_ctx *ctx,
-                               uint8_t out[KUZNYECHIK_BLOCK_SIZE],
-                               const uint8_t in[KUZNYECHIK_BLOCK_SIZE]);
+                               u8 out[KUZNYECHIK_BLOCK_SIZE],
+                               const u8 in[KUZNYECHIK_BLOCK_SIZE]);
 void kuznyechik_generic_decrypt(const struct kuznyechik_ctx *ctx,
-                               uint8_t out[KUZNYECHIK_BLOCK_SIZE],
-                               const uint8_t in[KUZNYECHIK_BLOCK_SIZE]);
+                               u8 out[KUZNYECHIK_BLOCK_SIZE],
+                               const u8 in[KUZNYECHIK_BLOCK_SIZE]);
 int kuznyechik_simd_setkey(struct kuznyechik_ctx *ctx,
-                          const uint8_t key[KUZNYECHIK_KEY_SIZE]);
+                          const u8 key[KUZNYECHIK_KEY_SIZE]);
 void kuznyechik_simd_encrypt(const struct kuznyechik_ctx *ctx,
-                            uint8_t out[KUZNYECHIK_BLOCK_SIZE],
-                            const uint8_t in[KUZNYECHIK_BLOCK_SIZE]);
+                            u8 out[KUZNYECHIK_BLOCK_SIZE],
+                            const u8 in[KUZNYECHIK_BLOCK_SIZE]);
 void kuznyechik_simd_decrypt(const struct kuznyechik_ctx *ctx,
-                            uint8_t out[KUZNYECHIK_BLOCK_SIZE],
-                            const uint8_t in[KUZNYECHIK_BLOCK_SIZE]);
+                            u8 out[KUZNYECHIK_BLOCK_SIZE],
+                            const u8 in[KUZNYECHIK_BLOCK_SIZE]);
 
 #endif

@@ -24,13 +24,13 @@
  */
 #if defined(__SIZEOF_INT128__) && !defined(PEDANTIC)
 
-#include <stdint.h>
+#include <libpogost/types.h>
 #include <string.h>
 #define LIMB_BITS 64
 #define LIMB_CNT 5
 /* Field elements */
-typedef uint64_t fe_t[LIMB_CNT];
-typedef uint64_t limb_t;
+typedef u64 fe_t[LIMB_CNT];
+typedef u64 limb_t;
 
 #ifdef OPENSSL_NO_ASM
 #define FIAT_ID_GOSTR3410_2001_CRYPTOPRO_A_PARAMSET_NO_ASM
@@ -98,11 +98,10 @@ typedef struct {
 /* bytes_eval z = z[0] + (z[1] << 8) + (z[2] << 16) + (z[3] << 24) + (z[4] << 32) + (z[5] << 40) + (z[6] << 48) + (z[7] << 56) + (z[8] << 64) + (z[9] << 72) + (z[10] << 80) + (z[11] << 88) + (z[12] << 96) + (z[13] << 104) + (z[14] << 112) + (z[15] << 120) + (z[16] << 128) + (z[17] << 136) + (z[18] << 144) + (z[19] << 152) + (z[20] << 160) + (z[21] << 168) + (z[22] << 176) + (z[23] << 184) + (z[24] << 192) + (z[25] << 200) + (z[26] << 208) + (z[27] << 216) + (z[28] << 224) + (z[29] << 232) + (z[30] << 240) + (z[31] << 248) */
 /* balance = [0x1ffffffffffb2e, 0xffffffffffffe, 0xffffffffffffe, 0xffffffffffffe, 0xffffffffffffe] */
 
-#include <stdint.h>
 typedef unsigned char fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1;
 typedef signed char fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_int1;
 typedef signed __int128 fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_int128;
-typedef unsigned __int128 fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128;
+typedef u128 fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128;
 
 #if (-1 & 3) != 3
 #error "This code only works on a two's complement system"
@@ -110,8 +109,8 @@ typedef unsigned __int128 fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128;
 
 #if !defined(FIAT_ID_GOSTR3410_2001_CRYPTOPRO_A_PARAMSET_NO_ASM) && \
     (defined(__GNUC__) || defined(__clang__))
-static __inline__ uint64_t
-fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_value_barrier_u64(uint64_t a) {
+static __inline__ u64
+fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_value_barrier_u64(u64 a) {
     __asm__("" : "+r"(a) : /* no inputs */);
     return a;
 }
@@ -134,11 +133,11 @@ fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_value_barrier_u64(uint64_t a) {
  *   out2: [0x0 ~> 0x1]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_addcarryx_u52(
-    uint64_t *out1, fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 *out2,
-    fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 arg1, uint64_t arg2,
-    uint64_t arg3) {
-    uint64_t x1;
-    uint64_t x2;
+    u64 *out1, fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 *out2,
+    fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 arg1, u64 arg2,
+    u64 arg3) {
+    u64 x1;
+    u64 x2;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x3;
     x1 = ((arg1 + arg2) + arg3);
     x2 = (x1 & UINT64_C(0xfffffffffffff));
@@ -162,13 +161,13 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_addcarryx_u52(
  *   out2: [0x0 ~> 0x1]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_subborrowx_u52(
-    uint64_t *out1, fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 *out2,
-    fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 arg1, uint64_t arg2,
-    uint64_t arg3) {
-    int64_t x1;
+    u64 *out1, fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 *out2,
+    fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 arg1, u64 arg2,
+    u64 arg3) {
+    s64 x1;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_int1 x2;
-    uint64_t x3;
-    x1 = ((int64_t)(arg2 - (int64_t)arg1) - (int64_t)arg3);
+    u64 x3;
+    x1 = ((s64)(arg2 - (s64)arg1) - (s64)arg3);
     x2 = (fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_int1)(x1 >> 52);
     x3 = (x1 & UINT64_C(0xfffffffffffff));
     *out1 = x3;
@@ -190,11 +189,11 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_subborrowx_u52(
  *   out2: [0x0 ~> 0x1]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_addcarryx_u51(
-    uint64_t *out1, fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 *out2,
-    fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 arg1, uint64_t arg2,
-    uint64_t arg3) {
-    uint64_t x1;
-    uint64_t x2;
+    u64 *out1, fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 *out2,
+    fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 arg1, u64 arg2,
+    u64 arg3) {
+    u64 x1;
+    u64 x2;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x3;
     x1 = ((arg1 + arg2) + arg3);
     x2 = (x1 & UINT64_C(0x7ffffffffffff));
@@ -218,13 +217,13 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_addcarryx_u51(
  *   out2: [0x0 ~> 0x1]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_subborrowx_u51(
-    uint64_t *out1, fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 *out2,
-    fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 arg1, uint64_t arg2,
-    uint64_t arg3) {
-    int64_t x1;
+    u64 *out1, fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 *out2,
+    fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 arg1, u64 arg2,
+    u64 arg3) {
+    s64 x1;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_int1 x2;
-    uint64_t x3;
-    x1 = ((int64_t)(arg2 - (int64_t)arg1) - (int64_t)arg3);
+    u64 x3;
+    x1 = ((s64)(arg2 - (s64)arg1) - (s64)arg3);
     x2 = (fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_int1)(x1 >> 51);
     x3 = (x1 & UINT64_C(0x7ffffffffffff));
     *out1 = x3;
@@ -244,11 +243,11 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_subborrowx_u51(
  *   out1: [0x0 ~> 0xffffffffffffffff]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_cmovznz_u64(
-    uint64_t *out1, fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 arg1,
-    uint64_t arg2, uint64_t arg3) {
+    u64 *out1, fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 arg1,
+    u64 arg2, u64 arg3) {
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x1;
-    uint64_t x2;
-    uint64_t x3;
+    u64 x2;
+    u64 x3;
     x1 = (!(!arg1));
     x2 = ((fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_int1)(0x0 - x1) &
           UINT64_C(0xffffffffffffffff));
@@ -272,7 +271,7 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_cmovznz_u64(
  *   out1: [[0x0 ~> 0x10000000000000], [0x0 ~> 0x8000000000000], [0x0 ~> 0x8000000000000], [0x0 ~> 0x8000000000000], [0x0 ~> 0x8000000000000]]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_carry_mul(
-    uint64_t out1[5], const uint64_t arg1[5], const uint64_t arg2[5]) {
+    u64 out1[5], const u64 arg1[5], const u64 arg2[5]) {
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x1;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x2;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x3;
@@ -300,31 +299,31 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_carry_mul(
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x25;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x26;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x27;
-    uint64_t x28;
+    u64 x28;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x29;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x30;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x31;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x32;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x33;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x34;
-    uint64_t x35;
+    u64 x35;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x36;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x37;
-    uint64_t x38;
+    u64 x38;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x39;
-    uint64_t x40;
-    uint64_t x41;
+    u64 x40;
+    u64 x41;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x42;
-    uint64_t x43;
-    uint64_t x44;
+    u64 x43;
+    u64 x44;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x45;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x46;
-    uint64_t x47;
-    uint64_t x48;
-    uint64_t x49;
+    u64 x47;
+    u64 x48;
+    u64 x49;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x50;
-    uint64_t x51;
-    uint64_t x52;
+    u64 x51;
+    u64 x52;
     x1 = (UINT16_C(0x269) *
           ((fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128)(arg1[4]) *
            (arg2[4])));
@@ -391,29 +390,29 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_carry_mul(
            (arg2[0]));
     x26 = (x25 + (x10 + (x9 + (x7 + x4))));
     x27 = (x26 >> 52);
-    x28 = (uint64_t)(x26 & UINT64_C(0xfffffffffffff));
+    x28 = (u64)(x26 & UINT64_C(0xfffffffffffff));
     x29 = (x21 + (x17 + (x14 + (x12 + x11))));
     x30 = (x22 + (x18 + (x15 + (x13 + x1))));
     x31 = (x23 + (x19 + (x16 + (x5 + x2))));
     x32 = (x24 + (x20 + (x8 + (x6 + x3))));
     x33 = (x27 + x32);
     x34 = (x33 >> 51);
-    x35 = (uint64_t)(x33 & UINT64_C(0x7ffffffffffff));
+    x35 = (u64)(x33 & UINT64_C(0x7ffffffffffff));
     x36 = (x34 + x31);
     x37 = (x36 >> 51);
-    x38 = (uint64_t)(x36 & UINT64_C(0x7ffffffffffff));
+    x38 = (u64)(x36 & UINT64_C(0x7ffffffffffff));
     x39 = (x37 + x30);
-    x40 = (uint64_t)(x39 >> 51);
-    x41 = (uint64_t)(x39 & UINT64_C(0x7ffffffffffff));
+    x40 = (u64)(x39 >> 51);
+    x41 = (u64)(x39 & UINT64_C(0x7ffffffffffff));
     x42 = (x40 + x29);
-    x43 = (uint64_t)(x42 >> 51);
-    x44 = (uint64_t)(x42 & UINT64_C(0x7ffffffffffff));
+    x43 = (u64)(x42 >> 51);
+    x44 = (u64)(x42 & UINT64_C(0x7ffffffffffff));
     x45 =
         ((fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128)UINT16_C(0x269) *
          x43);
     x46 = (x28 + x45);
-    x47 = (uint64_t)(x46 >> 52);
-    x48 = (uint64_t)(x46 & UINT64_C(0xfffffffffffff));
+    x47 = (u64)(x46 >> 52);
+    x48 = (u64)(x46 & UINT64_C(0xfffffffffffff));
     x49 = (x47 + x35);
     x50 = (fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1)(x49 >> 51);
     x51 = (x49 & UINT64_C(0x7ffffffffffff));
@@ -436,15 +435,15 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_carry_mul(
  *   out1: [[0x0 ~> 0x10000000000000], [0x0 ~> 0x8000000000000], [0x0 ~> 0x8000000000000], [0x0 ~> 0x8000000000000], [0x0 ~> 0x8000000000000]]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_carry_square(
-    uint64_t out1[5], const uint64_t arg1[5]) {
-    uint64_t x1;
-    uint64_t x2;
-    uint64_t x3;
-    uint64_t x4;
-    uint64_t x5;
-    uint64_t x6;
-    uint64_t x7;
-    uint64_t x8;
+    u64 out1[5], const u64 arg1[5]) {
+    u64 x1;
+    u64 x2;
+    u64 x3;
+    u64 x4;
+    u64 x5;
+    u64 x6;
+    u64 x7;
+    u64 x8;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x9;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x10;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x11;
@@ -462,31 +461,31 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_carry_square(
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x23;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x24;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x25;
-    uint64_t x26;
+    u64 x26;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x27;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x28;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x29;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x30;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x31;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x32;
-    uint64_t x33;
+    u64 x33;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x34;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x35;
-    uint64_t x36;
+    u64 x36;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x37;
-    uint64_t x38;
-    uint64_t x39;
+    u64 x38;
+    u64 x39;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x40;
-    uint64_t x41;
-    uint64_t x42;
+    u64 x41;
+    u64 x42;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x43;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128 x44;
-    uint64_t x45;
-    uint64_t x46;
-    uint64_t x47;
+    u64 x45;
+    u64 x46;
+    u64 x47;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x48;
-    uint64_t x49;
-    uint64_t x50;
+    u64 x49;
+    u64 x50;
     x1 = ((arg1[4]) * UINT16_C(0x269));
     x2 = (x1 * 0x2);
     x3 = ((arg1[4]) * 0x2);
@@ -519,29 +518,29 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_carry_square(
            (arg1[0]));
     x24 = (x23 + (x15 + x13));
     x25 = (x24 >> 52);
-    x26 = (uint64_t)(x24 & UINT64_C(0xfffffffffffff));
+    x26 = (u64)(x24 & UINT64_C(0xfffffffffffff));
     x27 = (x19 + (x16 + x14));
     x28 = (x20 + (x17 + x9));
     x29 = (x21 + (x18 + x10));
     x30 = (x22 + (x12 + x11));
     x31 = (x25 + x30);
     x32 = (x31 >> 51);
-    x33 = (uint64_t)(x31 & UINT64_C(0x7ffffffffffff));
+    x33 = (u64)(x31 & UINT64_C(0x7ffffffffffff));
     x34 = (x32 + x29);
     x35 = (x34 >> 51);
-    x36 = (uint64_t)(x34 & UINT64_C(0x7ffffffffffff));
+    x36 = (u64)(x34 & UINT64_C(0x7ffffffffffff));
     x37 = (x35 + x28);
-    x38 = (uint64_t)(x37 >> 51);
-    x39 = (uint64_t)(x37 & UINT64_C(0x7ffffffffffff));
+    x38 = (u64)(x37 >> 51);
+    x39 = (u64)(x37 & UINT64_C(0x7ffffffffffff));
     x40 = (x38 + x27);
-    x41 = (uint64_t)(x40 >> 51);
-    x42 = (uint64_t)(x40 & UINT64_C(0x7ffffffffffff));
+    x41 = (u64)(x40 >> 51);
+    x42 = (u64)(x40 & UINT64_C(0x7ffffffffffff));
     x43 =
         ((fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint128)UINT16_C(0x269) *
          x41);
     x44 = (x26 + x43);
-    x45 = (uint64_t)(x44 >> 52);
-    x46 = (uint64_t)(x44 & UINT64_C(0xfffffffffffff));
+    x45 = (u64)(x44 >> 52);
+    x46 = (u64)(x44 & UINT64_C(0xfffffffffffff));
     x47 = (x45 + x33);
     x48 = (fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1)(x47 >> 51);
     x49 = (x47 & UINT64_C(0x7ffffffffffff));
@@ -564,19 +563,19 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_carry_square(
  *   out1: [[0x0 ~> 0x10000000000000], [0x0 ~> 0x8000000000000], [0x0 ~> 0x8000000000000], [0x0 ~> 0x8000000000000], [0x0 ~> 0x8000000000000]]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_carry(
-    uint64_t out1[5], const uint64_t arg1[5]) {
-    uint64_t x1;
-    uint64_t x2;
-    uint64_t x3;
-    uint64_t x4;
-    uint64_t x5;
-    uint64_t x6;
-    uint64_t x7;
-    uint64_t x8;
-    uint64_t x9;
-    uint64_t x10;
-    uint64_t x11;
-    uint64_t x12;
+    u64 out1[5], const u64 arg1[5]) {
+    u64 x1;
+    u64 x2;
+    u64 x3;
+    u64 x4;
+    u64 x5;
+    u64 x6;
+    u64 x7;
+    u64 x8;
+    u64 x9;
+    u64 x10;
+    u64 x11;
+    u64 x12;
     x1 = (arg1[0]);
     x2 = ((x1 >> 52) + (arg1[1]));
     x3 = ((x2 >> 51) + (arg1[2]));
@@ -610,12 +609,12 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_carry(
  *   out1: [[0x0 ~> 0x30000000000000], [0x0 ~> 0x18000000000000], [0x0 ~> 0x18000000000000], [0x0 ~> 0x18000000000000], [0x0 ~> 0x18000000000000]]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_add(
-    uint64_t out1[5], const uint64_t arg1[5], const uint64_t arg2[5]) {
-    uint64_t x1;
-    uint64_t x2;
-    uint64_t x3;
-    uint64_t x4;
-    uint64_t x5;
+    u64 out1[5], const u64 arg1[5], const u64 arg2[5]) {
+    u64 x1;
+    u64 x2;
+    u64 x3;
+    u64 x4;
+    u64 x5;
     x1 = ((arg1[0]) + (arg2[0]));
     x2 = ((arg1[1]) + (arg2[1]));
     x3 = ((arg1[2]) + (arg2[2]));
@@ -640,12 +639,12 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_add(
  *   out1: [[0x0 ~> 0x30000000000000], [0x0 ~> 0x18000000000000], [0x0 ~> 0x18000000000000], [0x0 ~> 0x18000000000000], [0x0 ~> 0x18000000000000]]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_sub(
-    uint64_t out1[5], const uint64_t arg1[5], const uint64_t arg2[5]) {
-    uint64_t x1;
-    uint64_t x2;
-    uint64_t x3;
-    uint64_t x4;
-    uint64_t x5;
+    u64 out1[5], const u64 arg1[5], const u64 arg2[5]) {
+    u64 x1;
+    u64 x2;
+    u64 x3;
+    u64 x4;
+    u64 x5;
     x1 = ((UINT64_C(0x1ffffffffffb2e) + (arg1[0])) - (arg2[0]));
     x2 = ((UINT64_C(0xffffffffffffe) + (arg1[1])) - (arg2[1]));
     x3 = ((UINT64_C(0xffffffffffffe) + (arg1[2])) - (arg2[2]));
@@ -669,12 +668,12 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_sub(
  *   out1: [[0x0 ~> 0x30000000000000], [0x0 ~> 0x18000000000000], [0x0 ~> 0x18000000000000], [0x0 ~> 0x18000000000000], [0x0 ~> 0x18000000000000]]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_opp(
-    uint64_t out1[5], const uint64_t arg1[5]) {
-    uint64_t x1;
-    uint64_t x2;
-    uint64_t x3;
-    uint64_t x4;
-    uint64_t x5;
+    u64 out1[5], const u64 arg1[5]) {
+    u64 x1;
+    u64 x2;
+    u64 x3;
+    u64 x4;
+    u64 x5;
     x1 = (UINT64_C(0x1ffffffffffb2e) - (arg1[0]));
     x2 = (UINT64_C(0xffffffffffffe) - (arg1[1]));
     x3 = (UINT64_C(0xffffffffffffe) - (arg1[2]));
@@ -700,13 +699,13 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_opp(
  *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_selectznz(
-    uint64_t out1[5], fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 arg1,
-    const uint64_t arg2[5], const uint64_t arg3[5]) {
-    uint64_t x1;
-    uint64_t x2;
-    uint64_t x3;
-    uint64_t x4;
-    uint64_t x5;
+    u64 out1[5], fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 arg1,
+    const u64 arg2[5], const u64 arg3[5]) {
+    u64 x1;
+    u64 x2;
+    u64 x3;
+    u64 x4;
+    u64 x5;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_cmovznz_u64(
         &x1, arg1, (arg2[0]), (arg3[0]));
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_cmovznz_u64(
@@ -735,98 +734,98 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_selectznz(
  *   out1: [[0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff]]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_to_bytes(
-    uint8_t out1[32], const uint64_t arg1[5]) {
-    uint64_t x1;
+    u8 out1[32], const u64 arg1[5]) {
+    u64 x1;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x2;
-    uint64_t x3;
+    u64 x3;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x4;
-    uint64_t x5;
+    u64 x5;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x6;
-    uint64_t x7;
+    u64 x7;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x8;
-    uint64_t x9;
+    u64 x9;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x10;
-    uint64_t x11;
-    uint64_t x12;
+    u64 x11;
+    u64 x12;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x13;
-    uint64_t x14;
+    u64 x14;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x15;
-    uint64_t x16;
+    u64 x16;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x17;
-    uint64_t x18;
+    u64 x18;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x19;
-    uint64_t x20;
+    u64 x20;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x21;
-    uint64_t x22;
-    uint64_t x23;
-    uint64_t x24;
-    uint64_t x25;
-    uint8_t x26;
-    uint64_t x27;
-    uint8_t x28;
-    uint64_t x29;
-    uint8_t x30;
-    uint64_t x31;
-    uint8_t x32;
-    uint64_t x33;
-    uint8_t x34;
-    uint64_t x35;
-    uint8_t x36;
-    uint8_t x37;
-    uint64_t x38;
-    uint8_t x39;
-    uint64_t x40;
-    uint8_t x41;
-    uint64_t x42;
-    uint8_t x43;
-    uint64_t x44;
-    uint8_t x45;
-    uint64_t x46;
-    uint8_t x47;
-    uint64_t x48;
-    uint8_t x49;
-    uint8_t x50;
-    uint64_t x51;
-    uint8_t x52;
-    uint64_t x53;
-    uint8_t x54;
-    uint64_t x55;
-    uint8_t x56;
-    uint64_t x57;
-    uint8_t x58;
-    uint64_t x59;
-    uint8_t x60;
-    uint64_t x61;
-    uint8_t x62;
-    uint64_t x63;
-    uint8_t x64;
-    uint8_t x65;
-    uint64_t x66;
-    uint8_t x67;
-    uint64_t x68;
-    uint8_t x69;
-    uint64_t x70;
-    uint8_t x71;
-    uint64_t x72;
-    uint8_t x73;
-    uint64_t x74;
-    uint8_t x75;
-    uint64_t x76;
-    uint8_t x77;
-    uint8_t x78;
-    uint64_t x79;
-    uint8_t x80;
-    uint64_t x81;
-    uint8_t x82;
-    uint64_t x83;
-    uint8_t x84;
-    uint64_t x85;
-    uint8_t x86;
-    uint64_t x87;
-    uint8_t x88;
-    uint64_t x89;
-    uint8_t x90;
-    uint8_t x91;
+    u64 x22;
+    u64 x23;
+    u64 x24;
+    u64 x25;
+    u8 x26;
+    u64 x27;
+    u8 x28;
+    u64 x29;
+    u8 x30;
+    u64 x31;
+    u8 x32;
+    u64 x33;
+    u8 x34;
+    u64 x35;
+    u8 x36;
+    u8 x37;
+    u64 x38;
+    u8 x39;
+    u64 x40;
+    u8 x41;
+    u64 x42;
+    u8 x43;
+    u64 x44;
+    u8 x45;
+    u64 x46;
+    u8 x47;
+    u64 x48;
+    u8 x49;
+    u8 x50;
+    u64 x51;
+    u8 x52;
+    u64 x53;
+    u8 x54;
+    u64 x55;
+    u8 x56;
+    u64 x57;
+    u8 x58;
+    u64 x59;
+    u8 x60;
+    u64 x61;
+    u8 x62;
+    u64 x63;
+    u8 x64;
+    u8 x65;
+    u64 x66;
+    u8 x67;
+    u64 x68;
+    u8 x69;
+    u64 x70;
+    u8 x71;
+    u64 x72;
+    u8 x73;
+    u64 x74;
+    u8 x75;
+    u64 x76;
+    u8 x77;
+    u8 x78;
+    u64 x79;
+    u8 x80;
+    u64 x81;
+    u8 x82;
+    u64 x83;
+    u8 x84;
+    u64 x85;
+    u8 x86;
+    u64 x87;
+    u8 x88;
+    u64 x89;
+    u8 x90;
+    u8 x91;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_subborrowx_u52(
         &x1, &x2, 0x0, (arg1[0]), UINT64_C(0xffffffffffd97));
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_subborrowx_u51(
@@ -853,72 +852,72 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_to_bytes(
     x23 = (x18 << 2);
     x24 = (x16 << 7);
     x25 = (x14 << 4);
-    x26 = (uint8_t)(x12 & UINT8_C(0xff));
+    x26 = (u8)(x12 & UINT8_C(0xff));
     x27 = (x12 >> 8);
-    x28 = (uint8_t)(x27 & UINT8_C(0xff));
+    x28 = (u8)(x27 & UINT8_C(0xff));
     x29 = (x27 >> 8);
-    x30 = (uint8_t)(x29 & UINT8_C(0xff));
+    x30 = (u8)(x29 & UINT8_C(0xff));
     x31 = (x29 >> 8);
-    x32 = (uint8_t)(x31 & UINT8_C(0xff));
+    x32 = (u8)(x31 & UINT8_C(0xff));
     x33 = (x31 >> 8);
-    x34 = (uint8_t)(x33 & UINT8_C(0xff));
+    x34 = (u8)(x33 & UINT8_C(0xff));
     x35 = (x33 >> 8);
-    x36 = (uint8_t)(x35 & UINT8_C(0xff));
-    x37 = (uint8_t)(x35 >> 8);
-    x38 = (x25 + (uint64_t)x37);
-    x39 = (uint8_t)(x38 & UINT8_C(0xff));
+    x36 = (u8)(x35 & UINT8_C(0xff));
+    x37 = (u8)(x35 >> 8);
+    x38 = (x25 + (u64)x37);
+    x39 = (u8)(x38 & UINT8_C(0xff));
     x40 = (x38 >> 8);
-    x41 = (uint8_t)(x40 & UINT8_C(0xff));
+    x41 = (u8)(x40 & UINT8_C(0xff));
     x42 = (x40 >> 8);
-    x43 = (uint8_t)(x42 & UINT8_C(0xff));
+    x43 = (u8)(x42 & UINT8_C(0xff));
     x44 = (x42 >> 8);
-    x45 = (uint8_t)(x44 & UINT8_C(0xff));
+    x45 = (u8)(x44 & UINT8_C(0xff));
     x46 = (x44 >> 8);
-    x47 = (uint8_t)(x46 & UINT8_C(0xff));
+    x47 = (u8)(x46 & UINT8_C(0xff));
     x48 = (x46 >> 8);
-    x49 = (uint8_t)(x48 & UINT8_C(0xff));
-    x50 = (uint8_t)(x48 >> 8);
-    x51 = (x24 + (uint64_t)x50);
-    x52 = (uint8_t)(x51 & UINT8_C(0xff));
+    x49 = (u8)(x48 & UINT8_C(0xff));
+    x50 = (u8)(x48 >> 8);
+    x51 = (x24 + (u64)x50);
+    x52 = (u8)(x51 & UINT8_C(0xff));
     x53 = (x51 >> 8);
-    x54 = (uint8_t)(x53 & UINT8_C(0xff));
+    x54 = (u8)(x53 & UINT8_C(0xff));
     x55 = (x53 >> 8);
-    x56 = (uint8_t)(x55 & UINT8_C(0xff));
+    x56 = (u8)(x55 & UINT8_C(0xff));
     x57 = (x55 >> 8);
-    x58 = (uint8_t)(x57 & UINT8_C(0xff));
+    x58 = (u8)(x57 & UINT8_C(0xff));
     x59 = (x57 >> 8);
-    x60 = (uint8_t)(x59 & UINT8_C(0xff));
+    x60 = (u8)(x59 & UINT8_C(0xff));
     x61 = (x59 >> 8);
-    x62 = (uint8_t)(x61 & UINT8_C(0xff));
+    x62 = (u8)(x61 & UINT8_C(0xff));
     x63 = (x61 >> 8);
-    x64 = (uint8_t)(x63 & UINT8_C(0xff));
-    x65 = (uint8_t)(x63 >> 8);
-    x66 = (x23 + (uint64_t)x65);
-    x67 = (uint8_t)(x66 & UINT8_C(0xff));
+    x64 = (u8)(x63 & UINT8_C(0xff));
+    x65 = (u8)(x63 >> 8);
+    x66 = (x23 + (u64)x65);
+    x67 = (u8)(x66 & UINT8_C(0xff));
     x68 = (x66 >> 8);
-    x69 = (uint8_t)(x68 & UINT8_C(0xff));
+    x69 = (u8)(x68 & UINT8_C(0xff));
     x70 = (x68 >> 8);
-    x71 = (uint8_t)(x70 & UINT8_C(0xff));
+    x71 = (u8)(x70 & UINT8_C(0xff));
     x72 = (x70 >> 8);
-    x73 = (uint8_t)(x72 & UINT8_C(0xff));
+    x73 = (u8)(x72 & UINT8_C(0xff));
     x74 = (x72 >> 8);
-    x75 = (uint8_t)(x74 & UINT8_C(0xff));
+    x75 = (u8)(x74 & UINT8_C(0xff));
     x76 = (x74 >> 8);
-    x77 = (uint8_t)(x76 & UINT8_C(0xff));
-    x78 = (uint8_t)(x76 >> 8);
-    x79 = (x22 + (uint64_t)x78);
-    x80 = (uint8_t)(x79 & UINT8_C(0xff));
+    x77 = (u8)(x76 & UINT8_C(0xff));
+    x78 = (u8)(x76 >> 8);
+    x79 = (x22 + (u64)x78);
+    x80 = (u8)(x79 & UINT8_C(0xff));
     x81 = (x79 >> 8);
-    x82 = (uint8_t)(x81 & UINT8_C(0xff));
+    x82 = (u8)(x81 & UINT8_C(0xff));
     x83 = (x81 >> 8);
-    x84 = (uint8_t)(x83 & UINT8_C(0xff));
+    x84 = (u8)(x83 & UINT8_C(0xff));
     x85 = (x83 >> 8);
-    x86 = (uint8_t)(x85 & UINT8_C(0xff));
+    x86 = (u8)(x85 & UINT8_C(0xff));
     x87 = (x85 >> 8);
-    x88 = (uint8_t)(x87 & UINT8_C(0xff));
+    x88 = (u8)(x87 & UINT8_C(0xff));
     x89 = (x87 >> 8);
-    x90 = (uint8_t)(x89 & UINT8_C(0xff));
-    x91 = (uint8_t)(x89 >> 8);
+    x90 = (u8)(x89 & UINT8_C(0xff));
+    x91 = (u8)(x89 >> 8);
     out1[0] = x26;
     out1[1] = x28;
     out1[2] = x30;
@@ -964,119 +963,119 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_to_bytes(
  *   out1: [[0x0 ~> 0x10000000000000], [0x0 ~> 0x8000000000000], [0x0 ~> 0x8000000000000], [0x0 ~> 0x8000000000000], [0x0 ~> 0x8000000000000]]
  */
 static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_from_bytes(
-    uint64_t out1[5], const uint8_t arg1[32]) {
-    uint64_t x1;
-    uint64_t x2;
-    uint64_t x3;
-    uint64_t x4;
-    uint64_t x5;
-    uint64_t x6;
-    uint64_t x7;
-    uint64_t x8;
-    uint64_t x9;
-    uint64_t x10;
-    uint64_t x11;
-    uint64_t x12;
-    uint64_t x13;
-    uint64_t x14;
-    uint64_t x15;
-    uint64_t x16;
-    uint64_t x17;
-    uint64_t x18;
-    uint64_t x19;
-    uint64_t x20;
-    uint64_t x21;
-    uint64_t x22;
-    uint64_t x23;
-    uint64_t x24;
-    uint64_t x25;
-    uint64_t x26;
-    uint64_t x27;
-    uint64_t x28;
-    uint64_t x29;
-    uint64_t x30;
-    uint64_t x31;
-    uint8_t x32;
-    uint64_t x33;
-    uint64_t x34;
-    uint64_t x35;
-    uint64_t x36;
-    uint64_t x37;
-    uint64_t x38;
-    uint64_t x39;
-    uint8_t x40;
-    uint64_t x41;
-    uint64_t x42;
-    uint64_t x43;
-    uint64_t x44;
-    uint64_t x45;
-    uint64_t x46;
-    uint64_t x47;
+    u64 out1[5], const u8 arg1[32]) {
+    u64 x1;
+    u64 x2;
+    u64 x3;
+    u64 x4;
+    u64 x5;
+    u64 x6;
+    u64 x7;
+    u64 x8;
+    u64 x9;
+    u64 x10;
+    u64 x11;
+    u64 x12;
+    u64 x13;
+    u64 x14;
+    u64 x15;
+    u64 x16;
+    u64 x17;
+    u64 x18;
+    u64 x19;
+    u64 x20;
+    u64 x21;
+    u64 x22;
+    u64 x23;
+    u64 x24;
+    u64 x25;
+    u64 x26;
+    u64 x27;
+    u64 x28;
+    u64 x29;
+    u64 x30;
+    u64 x31;
+    u8 x32;
+    u64 x33;
+    u64 x34;
+    u64 x35;
+    u64 x36;
+    u64 x37;
+    u64 x38;
+    u64 x39;
+    u8 x40;
+    u64 x41;
+    u64 x42;
+    u64 x43;
+    u64 x44;
+    u64 x45;
+    u64 x46;
+    u64 x47;
     fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1 x48;
-    uint64_t x49;
-    uint64_t x50;
-    uint64_t x51;
-    uint64_t x52;
-    uint64_t x53;
-    uint64_t x54;
-    uint64_t x55;
-    uint64_t x56;
-    uint8_t x57;
-    uint64_t x58;
-    uint64_t x59;
-    uint64_t x60;
-    uint64_t x61;
-    uint64_t x62;
-    uint64_t x63;
-    uint64_t x64;
-    uint8_t x65;
-    uint64_t x66;
-    uint64_t x67;
-    uint64_t x68;
-    uint64_t x69;
-    uint64_t x70;
-    uint64_t x71;
-    x1 = ((uint64_t)(arg1[31]) << 43);
-    x2 = ((uint64_t)(arg1[30]) << 35);
-    x3 = ((uint64_t)(arg1[29]) << 27);
-    x4 = ((uint64_t)(arg1[28]) << 19);
-    x5 = ((uint64_t)(arg1[27]) << 11);
-    x6 = ((uint64_t)(arg1[26]) << 3);
-    x7 = ((uint64_t)(arg1[25]) << 46);
-    x8 = ((uint64_t)(arg1[24]) << 38);
-    x9 = ((uint64_t)(arg1[23]) << 30);
-    x10 = ((uint64_t)(arg1[22]) << 22);
-    x11 = ((uint64_t)(arg1[21]) << 14);
-    x12 = ((uint64_t)(arg1[20]) << 6);
-    x13 = ((uint64_t)(arg1[19]) << 49);
-    x14 = ((uint64_t)(arg1[18]) << 41);
-    x15 = ((uint64_t)(arg1[17]) << 33);
-    x16 = ((uint64_t)(arg1[16]) << 25);
-    x17 = ((uint64_t)(arg1[15]) << 17);
-    x18 = ((uint64_t)(arg1[14]) << 9);
-    x19 = ((uint64_t)(arg1[13]) * 0x2);
-    x20 = ((uint64_t)(arg1[12]) << 44);
-    x21 = ((uint64_t)(arg1[11]) << 36);
-    x22 = ((uint64_t)(arg1[10]) << 28);
-    x23 = ((uint64_t)(arg1[9]) << 20);
-    x24 = ((uint64_t)(arg1[8]) << 12);
-    x25 = ((uint64_t)(arg1[7]) << 4);
-    x26 = ((uint64_t)(arg1[6]) << 48);
-    x27 = ((uint64_t)(arg1[5]) << 40);
-    x28 = ((uint64_t)(arg1[4]) << 32);
-    x29 = ((uint64_t)(arg1[3]) << 24);
-    x30 = ((uint64_t)(arg1[2]) << 16);
-    x31 = ((uint64_t)(arg1[1]) << 8);
+    u64 x49;
+    u64 x50;
+    u64 x51;
+    u64 x52;
+    u64 x53;
+    u64 x54;
+    u64 x55;
+    u64 x56;
+    u8 x57;
+    u64 x58;
+    u64 x59;
+    u64 x60;
+    u64 x61;
+    u64 x62;
+    u64 x63;
+    u64 x64;
+    u8 x65;
+    u64 x66;
+    u64 x67;
+    u64 x68;
+    u64 x69;
+    u64 x70;
+    u64 x71;
+    x1 = ((u64)(arg1[31]) << 43);
+    x2 = ((u64)(arg1[30]) << 35);
+    x3 = ((u64)(arg1[29]) << 27);
+    x4 = ((u64)(arg1[28]) << 19);
+    x5 = ((u64)(arg1[27]) << 11);
+    x6 = ((u64)(arg1[26]) << 3);
+    x7 = ((u64)(arg1[25]) << 46);
+    x8 = ((u64)(arg1[24]) << 38);
+    x9 = ((u64)(arg1[23]) << 30);
+    x10 = ((u64)(arg1[22]) << 22);
+    x11 = ((u64)(arg1[21]) << 14);
+    x12 = ((u64)(arg1[20]) << 6);
+    x13 = ((u64)(arg1[19]) << 49);
+    x14 = ((u64)(arg1[18]) << 41);
+    x15 = ((u64)(arg1[17]) << 33);
+    x16 = ((u64)(arg1[16]) << 25);
+    x17 = ((u64)(arg1[15]) << 17);
+    x18 = ((u64)(arg1[14]) << 9);
+    x19 = ((u64)(arg1[13]) * 0x2);
+    x20 = ((u64)(arg1[12]) << 44);
+    x21 = ((u64)(arg1[11]) << 36);
+    x22 = ((u64)(arg1[10]) << 28);
+    x23 = ((u64)(arg1[9]) << 20);
+    x24 = ((u64)(arg1[8]) << 12);
+    x25 = ((u64)(arg1[7]) << 4);
+    x26 = ((u64)(arg1[6]) << 48);
+    x27 = ((u64)(arg1[5]) << 40);
+    x28 = ((u64)(arg1[4]) << 32);
+    x29 = ((u64)(arg1[3]) << 24);
+    x30 = ((u64)(arg1[2]) << 16);
+    x31 = ((u64)(arg1[1]) << 8);
     x32 = (arg1[0]);
-    x33 = (x31 + (uint64_t)x32);
+    x33 = (x31 + (u64)x32);
     x34 = (x30 + x33);
     x35 = (x29 + x34);
     x36 = (x28 + x35);
     x37 = (x27 + x36);
     x38 = (x26 + x37);
     x39 = (x38 & UINT64_C(0xfffffffffffff));
-    x40 = (uint8_t)(x38 >> 52);
-    x41 = (x25 + (uint64_t)x40);
+    x40 = (u8)(x38 >> 52);
+    x41 = (x25 + (u64)x40);
     x42 = (x24 + x41);
     x43 = (x23 + x42);
     x44 = (x22 + x43);
@@ -1084,7 +1083,7 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_from_bytes(
     x46 = (x20 + x45);
     x47 = (x46 & UINT64_C(0x7ffffffffffff));
     x48 = (fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_uint1)(x46 >> 51);
-    x49 = (x19 + (uint64_t)x48);
+    x49 = (x19 + (u64)x48);
     x50 = (x18 + x49);
     x51 = (x17 + x50);
     x52 = (x16 + x51);
@@ -1092,16 +1091,16 @@ static void fiat_id_GostR3410_2001_CryptoPro_A_ParamSet_from_bytes(
     x54 = (x14 + x53);
     x55 = (x13 + x54);
     x56 = (x55 & UINT64_C(0x7ffffffffffff));
-    x57 = (uint8_t)(x55 >> 51);
-    x58 = (x12 + (uint64_t)x57);
+    x57 = (u8)(x55 >> 51);
+    x58 = (x12 + (u64)x57);
     x59 = (x11 + x58);
     x60 = (x10 + x59);
     x61 = (x9 + x60);
     x62 = (x8 + x61);
     x63 = (x7 + x62);
     x64 = (x63 & UINT64_C(0x7ffffffffffff));
-    x65 = (uint8_t)(x63 >> 51);
-    x66 = (x6 + (uint64_t)x65);
+    x65 = (u8)(x63 >> 51);
+    x66 = (x6 + (u64)x65);
     x67 = (x5 + x66);
     x68 = (x4 + x67);
     x69 = (x3 + x68);
@@ -3313,9 +3312,9 @@ static int scalar_get_bit(const unsigned char in[32], int idx) {
  * {\pm 1, \pm 3, \pm 5, \pm 7, \pm 9, ...}
  * i.e. signed odd digits with _no zeroes_ -- that makes it "regular".
  */
-static void scalar_rwnaf(int8_t out[52], const unsigned char in[32]) {
+static void scalar_rwnaf(s8 out[52], const unsigned char in[32]) {
     int i;
-    int8_t window, d;
+    s8 window, d;
 
     window = (in[0] & (DRADIX_WNAF - 1)) | 1;
     for (i = 0; i < 51; i++) {
@@ -3335,9 +3334,9 @@ static void scalar_rwnaf(int8_t out[52], const unsigned char in[32]) {
  * Compute "textbook" wnaf representation of a scalar.
  * NB: not constant time
  */
-static void scalar_wnaf(int8_t out[257], const unsigned char in[32]) {
+static void scalar_wnaf(s8 out[257], const unsigned char in[32]) {
     int i;
-    int8_t window, d;
+    s8 window, d;
 
     window = in[0] & (DRADIX_WNAF - 1);
     for (i = 0; i < 257; i++) {
@@ -3357,8 +3356,8 @@ static void scalar_wnaf(int8_t out[257], const unsigned char in[32]) {
 static void var_smul_wnaf_two(pt_aff_t *out, const unsigned char a[32],
                               const unsigned char b[32], const pt_aff_t *P) {
     int i, d, is_neg, is_inf = 1, flipped = 0;
-    int8_t anaf[257] = {0};
-    int8_t bnaf[257] = {0};
+    s8 anaf[257] = {0};
+    s8 bnaf[257] = {0};
     pt_prj_t Q = {0};
     pt_prj_t precomp[DRADIX / 2];
 
@@ -3423,7 +3422,7 @@ static void var_smul_wnaf_two(pt_aff_t *out, const unsigned char a[32],
  */
 static void fixed_smul_cmb(pt_aff_t *out, const unsigned char scalar[32]) {
     int i, j, k, d, diff, is_neg = 0;
-    int8_t rnaf[52] = {0};
+    s8 rnaf[52] = {0};
     pt_prj_t Q = {0}, R = {0};
     pt_aff_t lut = {0};
 

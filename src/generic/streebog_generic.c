@@ -10,7 +10,11 @@
 
 #include <libpogost/streebog.h>
 
+#ifdef __KERNEL__
+#include <linux/string.h>
+#else
 #include <string.h>
+#endif
 
 #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #define cpu_to_le64(x) __builtin_bswap64(x)
@@ -21,12 +25,12 @@
 #endif
 
 struct streebog_uint512 {
-  uint64_t qword[8];
+  u64 qword[8];
 };
 
 struct streebog_state {
   union {
-    uint8_t buffer[STREEBOG_BLOCK_SIZE];
+    u8 buffer[STREEBOG_BLOCK_SIZE];
     struct streebog_uint512 m;
   };
   struct streebog_uint512 hash;
@@ -889,7 +893,7 @@ static void streebog_xlps(const struct streebog_uint512 *x,
 			  const struct streebog_uint512 *y,
 			  struct streebog_uint512 *data)
 {
-	uint64_t r0, r1, r2, r3, r4, r5, r6, r7;
+	u64 r0, r1, r2, r3, r4, r5, r6, r7;
 	int i;
 
 	r0 = le64_to_cpu(x->qword[0] ^ y->qword[0]);
@@ -956,12 +960,12 @@ static void streebog_add512(const struct streebog_uint512 *x,
 			    const struct streebog_uint512 *y,
 			    struct streebog_uint512 *r)
 {
-	uint64_t carry = 0;
+	u64 carry = 0;
 	int i;
 
 	for (i = 0; i < 8; i++) {
-		const uint64_t left = le64_to_cpu(x->qword[i]);
-		uint64_t sum;
+		const u64 left = le64_to_cpu(x->qword[i]);
+		u64 sum;
 
 		sum = left + le64_to_cpu(y->qword[i]) + carry;
 		if (sum != left)
@@ -994,7 +998,7 @@ static void streebog_g(struct streebog_uint512 *h,
 	streebog_xor(&data, m, h);
 }
 
-static void streebog_stage2(struct streebog_state *ctx, const uint8_t *data)
+static void streebog_stage2(struct streebog_state *ctx, const u8 *data)
 {
 	struct streebog_uint512 m;
 
@@ -1021,7 +1025,7 @@ static void streebog_stage3(struct streebog_state *ctx)
 	memcpy(&ctx->hash, &ctx->h, sizeof(struct streebog_uint512));
 }
 
-void streebog_update(struct streebog_ctx *pub, const uint8_t *data,
+void streebog_update(struct streebog_ctx *pub, const u8 *data,
                      size_t len)
 {
   struct streebog_state *ctx = (struct streebog_state *) pub;
@@ -1054,7 +1058,7 @@ void streebog_update(struct streebog_ctx *pub, const uint8_t *data,
 	}
 }
 
-void streebog_final(struct streebog_ctx *pub, uint8_t *digest)
+void streebog_final(struct streebog_ctx *pub, u8 *digest)
 {
   struct streebog_state *ctx = (struct streebog_state *) pub;
 
@@ -1066,8 +1070,8 @@ void streebog_final(struct streebog_ctx *pub, uint8_t *digest)
     memcpy(digest, &ctx->hash.qword[0], STREEBOG512_DIGEST_SIZE);
 }
 
-void streebog256(uint8_t digest[STREEBOG256_DIGEST_SIZE],
-                 const uint8_t *data, size_t len)
+void streebog256(u8 digest[STREEBOG256_DIGEST_SIZE],
+                 const u8 *data, size_t len)
 {
   struct streebog_ctx ctx;
 
@@ -1076,8 +1080,8 @@ void streebog256(uint8_t digest[STREEBOG256_DIGEST_SIZE],
   streebog_final(&ctx, digest);
 }
 
-void streebog512(uint8_t digest[STREEBOG512_DIGEST_SIZE],
-                 const uint8_t *data, size_t len)
+void streebog512(u8 digest[STREEBOG512_DIGEST_SIZE],
+                 const u8 *data, size_t len)
 {
   struct streebog_ctx ctx;
 
@@ -1085,4 +1089,3 @@ void streebog512(uint8_t digest[STREEBOG512_DIGEST_SIZE],
   streebog_update(&ctx, data, len);
   streebog_final(&ctx, digest);
 }
-

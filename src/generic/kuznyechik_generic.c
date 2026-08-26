@@ -9,7 +9,6 @@
  * any later version.
  */
 
-#include <stdint.h>
 
 #include <libpogost/kuznyechik.h>
 
@@ -18,7 +17,7 @@
 #include "kuztable.h"
 
 /* S-преобразование заменяет каждый байт таблицей подстановки. */
-static void s_transform(uint8_t *a, const uint8_t *b)
+static void s_transform(u8 *a, const u8 *b)
 {
 	a[0] = pi[b[0]];
 	a[1] = pi[b[1]];
@@ -38,7 +37,7 @@ static void s_transform(uint8_t *a, const uint8_t *b)
 	a[15] = pi[b[15]];
 }
 
-static void sinv_transform(uint8_t *a, const uint8_t *b)
+static void sinv_transform(u8 *a, const u8 *b)
 {
 	a[0] = pi_inv[b[0]];
 	a[1] = pi_inv[b[1]];
@@ -58,7 +57,7 @@ static void sinv_transform(uint8_t *a, const uint8_t *b)
 	a[15] = pi_inv[b[15]];
 }
 
-static void linv_transform(uint8_t *a, const uint8_t *b)
+static void linv_transform(u8 *a, const u8 *b)
 {
 	kuznyechik_copy(a, &kuz_table_inv[0][b[0] * 16], KUZNYECHIK_BLOCK_SIZE);
 	kuznyechik_xor(a, &kuz_table_inv[1][b[1] * 16], KUZNYECHIK_BLOCK_SIZE);
@@ -78,9 +77,9 @@ static void linv_transform(uint8_t *a, const uint8_t *b)
 	kuznyechik_xor(a, &kuz_table_inv[15][b[15] * 16], KUZNYECHIK_BLOCK_SIZE);
 }
 
-static void lsx_transform(uint8_t *a, const uint8_t *b, const uint8_t *c)
+static void lsx_transform(u8 *a, const u8 *b, const u8 *c)
 {
-	uint8_t t[16];
+	u8 t[16];
 
 	kuznyechik_copy(t, &kuz_table[0][(b[0] ^ c[0]) * 16], KUZNYECHIK_BLOCK_SIZE);
 	kuznyechik_xor(t, &kuz_table[1][(b[1] ^ c[1]) * 16], KUZNYECHIK_BLOCK_SIZE);
@@ -100,9 +99,9 @@ static void lsx_transform(uint8_t *a, const uint8_t *b, const uint8_t *c)
 	kuznyechik_xor_copy(a, t, &kuz_table[15][(b[15] ^ c[15]) * 16], KUZNYECHIK_BLOCK_SIZE);
 }
 
-static void xli_si(uint8_t *a, const uint8_t *b, const uint8_t *c)
+static void xli_si(u8 *a, const u8 *b, const u8 *c)
 {
-	uint8_t t[16];
+	u8 t[16];
 
 	kuznyechik_copy(t, &kuz_table_inv_LS[0][b[0] * 16], KUZNYECHIK_BLOCK_SIZE);
 	kuznyechik_xor(t, &kuz_table_inv_LS[1][b[1] * 16], KUZNYECHIK_BLOCK_SIZE);
@@ -123,9 +122,9 @@ static void xli_si(uint8_t *a, const uint8_t *b, const uint8_t *c)
 	kuznyechik_xor_copy(a, t, c, 16);
 }
 
-static void subkey(uint8_t *out, const uint8_t *key, unsigned int i)
+static void subkey(u8 *out, const u8 *key, unsigned int i)
 {
-	uint8_t test[16];
+	u8 test[16];
 
 	lsx_transform(test, key+0, kuz_key_table[i + 0]);
 	kuznyechik_xor_copy(out+16, test, key + 16, 16);
@@ -147,7 +146,7 @@ static void subkey(uint8_t *out, const uint8_t *key, unsigned int i)
 
 /* Разворачиваем пользовательский ключ в десять раундовых ключей. */
 int kuznyechik_generic_setkey(struct kuznyechik_ctx *ctx,
-                             const uint8_t key[KUZNYECHIK_KEY_SIZE])
+                             const u8 key[KUZNYECHIK_KEY_SIZE])
 {
 	struct kuznyechik_state *state;
 	unsigned int i;
@@ -168,11 +167,11 @@ int kuznyechik_generic_setkey(struct kuznyechik_ctx *ctx,
 }
 
 void kuznyechik_generic_encrypt(const struct kuznyechik_ctx *ctx,
-                               uint8_t out[KUZNYECHIK_BLOCK_SIZE],
-                               const uint8_t in[KUZNYECHIK_BLOCK_SIZE])
+                               u8 out[KUZNYECHIK_BLOCK_SIZE],
+                               const u8 in[KUZNYECHIK_BLOCK_SIZE])
 {
 	const struct kuznyechik_state *state = kuznyechik_const_state(ctx);
-	uint8_t temp[KUZNYECHIK_BLOCK_SIZE];
+	u8 temp[KUZNYECHIK_BLOCK_SIZE];
 
 	lsx_transform(temp, state->key + 16 * 0, in);
 	lsx_transform(temp, state->key + 16 * 1, temp);
@@ -187,11 +186,11 @@ void kuznyechik_generic_encrypt(const struct kuznyechik_ctx *ctx,
 }
 
 void kuznyechik_generic_decrypt(const struct kuznyechik_ctx *ctx,
-                               uint8_t out[KUZNYECHIK_BLOCK_SIZE],
-                               const uint8_t in[KUZNYECHIK_BLOCK_SIZE])
+                               u8 out[KUZNYECHIK_BLOCK_SIZE],
+                               const u8 in[KUZNYECHIK_BLOCK_SIZE])
 {
 	const struct kuznyechik_state *state = kuznyechik_const_state(ctx);
-	uint8_t temp[KUZNYECHIK_BLOCK_SIZE];
+	u8 temp[KUZNYECHIK_BLOCK_SIZE];
 
 	s_transform(temp, in);
 	xli_si(temp, temp, state->dekey + 16 * 9);

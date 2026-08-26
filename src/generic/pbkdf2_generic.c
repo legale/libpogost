@@ -7,21 +7,21 @@
 
 static void memzero(void *ptr, size_t len)
 {
-  volatile uint8_t *p = ptr;
+  volatile u8 *p = ptr;
 
   while (len--) {
     *p++ = 0;
   }
 }
 
-int pbkdf2_streebog512(uint8_t *out, size_t out_len,
-                       const uint8_t *pass, size_t pass_len,
-                       const uint8_t *salt, size_t salt_len, uint32_t iter)
+int pbkdf2_streebog512(u8 *out, size_t out_len,
+                       const u8 *pass, size_t pass_len,
+                       const u8 *salt, size_t salt_len, u32 iter)
 {
-  uint8_t u[64];
-  uint8_t t[64];
-  uint8_t be[4];
-  uint32_t block = 1;
+  u8 u[64];
+  u8 t[64];
+  u8 be[4];
+  u32 block = 1;
   size_t off = 0;
 
   if ((!out && out_len) || (!pass && pass_len) || (!salt && salt_len) ||
@@ -33,7 +33,7 @@ int pbkdf2_streebog512(uint8_t *out, size_t out_len,
   }
 
   while (off < out_len) {
-    uint32_t i;
+    u32 i;
     size_t n = out_len - off;
     size_t j;
 

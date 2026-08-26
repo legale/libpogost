@@ -6,14 +6,14 @@
 
 struct gost3411_94_ctx {
   struct gost28147_state cipher;
-  uint64_t len;
+  u64 len;
   size_t left;
-  uint8_t h[32];
-  uint8_t sum[32];
-  uint8_t rem[32];
+  u8 h[32];
+  u8 sum[32];
+  u8 rem[32];
 };
 
-static void swap_bytes(const uint8_t *w, uint8_t *key)
+static void swap_bytes(const u8 *w, u8 *key)
 {
   unsigned int i;
   unsigned int j;
@@ -25,9 +25,9 @@ static void swap_bytes(const uint8_t *w, uint8_t *key)
   }
 }
 
-static void circle_xor8(const uint8_t *w, uint8_t *k)
+static void circle_xor8(const u8 *w, u8 *k)
 {
-  uint8_t buf[8];
+  u8 buf[8];
   unsigned int i;
 
   memcpy(buf, w, sizeof(buf));
@@ -37,19 +37,19 @@ static void circle_xor8(const uint8_t *w, uint8_t *k)
   }
 }
 
-static void transform_3(uint8_t data[32])
+static void transform_3(u8 data[32])
 {
-  uint16_t acc;
+  u16 acc;
 
   acc = data[0] ^ data[2] ^ data[4] ^ data[6] ^ data[24] ^ data[30];
-  acc |= (uint16_t)(data[1] ^ data[3] ^ data[5] ^ data[7] ^ data[25] ^
+  acc |= (u16)(data[1] ^ data[3] ^ data[5] ^ data[7] ^ data[25] ^
                     data[31]) << 8;
   memmove(data, data + 2, 30);
   data[30] = acc;
   data[31] = acc >> 8;
 }
 
-static void add_blocks(uint8_t left[32], const uint8_t right[32])
+static void add_blocks(u8 left[32], const u8 right[32])
 {
   unsigned int carry = 0;
   unsigned int i;
@@ -62,8 +62,8 @@ static void add_blocks(uint8_t left[32], const uint8_t right[32])
   }
 }
 
-static void xor_blocks(uint8_t out[32], const uint8_t a[32],
-                       const uint8_t b[32])
+static void xor_blocks(u8 out[32], const u8 a[32],
+                       const u8 b[32])
 {
   unsigned int i;
 
@@ -72,21 +72,21 @@ static void xor_blocks(uint8_t out[32], const uint8_t a[32],
   }
 }
 
-static void encrypt_key(struct gost28147_state *st, const uint8_t key[32],
-                        const uint8_t in[8], uint8_t out[8])
+static void encrypt_key(struct gost28147_state *st, const u8 key[32],
+                        const u8 in[8], u8 out[8])
 {
   gost28147_setkey_raw(st, key, gost28147_sbox_cryptopro_3411);
   gost28147_encrypt_raw(st, out, in);
 }
 
-static void hash_step(struct gost3411_94_ctx *ctx, uint8_t h[32],
-                      const uint8_t m[32])
+static void hash_step(struct gost3411_94_ctx *ctx, u8 h[32],
+                      const u8 m[32])
 {
-  uint8_t u[32];
-  uint8_t v[32];
-  uint8_t w[32];
-  uint8_t s[32];
-  uint8_t key[32];
+  u8 u[32];
+  u8 v[32];
+  u8 w[32];
+  u8 s[32];
+  u8 key[32];
   unsigned int i;
 
   xor_blocks(w, h, m);
@@ -142,7 +142,7 @@ static void hash_step(struct gost3411_94_ctx *ctx, uint8_t h[32],
   memcpy(h, s, 32);
 }
 
-static void update(struct gost3411_94_ctx *ctx, const uint8_t *data, size_t len)
+static void update(struct gost3411_94_ctx *ctx, const u8 *data, size_t len)
 {
   if (ctx->left) {
     size_t n = 32 - ctx->left;
@@ -176,12 +176,12 @@ static void update(struct gost3411_94_ctx *ctx, const uint8_t *data, size_t len)
   }
 }
 
-static void final(struct gost3411_94_ctx *ctx, uint8_t out[32])
+static void final(struct gost3411_94_ctx *ctx, u8 out[32])
 {
-  uint8_t buf[32] = { 0 };
-  uint8_t h[32];
-  uint8_t sum[32];
-  uint64_t len = ctx->len;
+  u8 buf[32] = { 0 };
+  u8 h[32];
+  u8 sum[32];
+  u64 len = ctx->len;
   unsigned int i;
 
   memcpy(h, ctx->h, sizeof(h));
@@ -206,10 +206,10 @@ static void final(struct gost3411_94_ctx *ctx, uint8_t out[32])
   memcpy(out, h, 32);
 }
 
-void gost3411_94_cryptopro_parts(uint8_t out[32],
-                                 const uint8_t *a, size_t a_len,
-                                 const uint8_t *b, size_t b_len,
-                                 const uint8_t *c, size_t c_len)
+void gost3411_94_cryptopro_parts(u8 out[32],
+                                 const u8 *a, size_t a_len,
+                                 const u8 *b, size_t b_len,
+                                 const u8 *c, size_t c_len)
 {
   struct gost3411_94_ctx ctx;
 
@@ -228,7 +228,7 @@ void gost3411_94_cryptopro_parts(uint8_t out[32],
   memset(&ctx, 0, sizeof(ctx));
 }
 
-void gost3411_94_cryptopro(uint8_t out[32], const uint8_t *data, size_t len)
+void gost3411_94_cryptopro(u8 out[32], const u8 *data, size_t len)
 {
   gost3411_94_cryptopro_parts(out, data, len, NULL, 0, NULL, 0);
 }

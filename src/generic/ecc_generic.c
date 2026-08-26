@@ -34,7 +34,7 @@
 
 static u64 get_unaligned_be64(const void *src)
 {
-  const uint8_t *p = src;
+  const u8 *p = src;
 
   return ((u64)p[0] << 56) | ((u64)p[1] << 48) |
          ((u64)p[2] << 40) | ((u64)p[3] << 32) |
@@ -44,7 +44,7 @@ static u64 get_unaligned_be64(const void *src)
 
 static u64 get_unaligned_le64(const void *src)
 {
-  const uint8_t *p = src;
+  const u8 *p = src;
 
   return ((u64)p[7] << 56) | ((u64)p[6] << 48) |
          ((u64)p[5] << 40) | ((u64)p[4] << 32) |
@@ -368,7 +368,7 @@ static uint128_t mul_64_64(u64 left, u64 right)
 {
 	uint128_t result;
 #if defined(CONFIG_ARCH_SUPPORTS_INT128)
-	unsigned __int128 m = (unsigned __int128)left * right;
+	u128 m = (u128)left * right;
 
 	result.m_low  = m;
 	result.m_high = m >> 64;

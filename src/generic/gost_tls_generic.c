@@ -5,25 +5,24 @@
 
 #include "hmac_streebog_internal.h"
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 static void memzero(void *ptr, size_t len)
 {
-  volatile uint8_t *p = ptr;
+  volatile u8 *p = ptr;
 
   while (len--)
     *p++ = 0;
 }
 
-void gost_hmac_streebog256(uint8_t out[32], const uint8_t *key, size_t key_len,
-                           const uint8_t *data, size_t data_len)
+void gost_hmac_streebog256(u8 out[32], const u8 *key, size_t key_len,
+                           const u8 *data, size_t data_len)
 {
   hmac_streebog256(out, key, key_len, data, data_len);
 }
 
-static size_t put_be(uint8_t out[sizeof(size_t)], size_t value)
+static size_t put_be(u8 out[sizeof(size_t)], size_t value)
 {
   size_t pos = sizeof(size_t);
 
@@ -35,14 +34,14 @@ static size_t put_be(uint8_t out[sizeof(size_t)], size_t value)
   return sizeof(size_t) - pos;
 }
 
-int gost_kdf_tree_256(uint8_t *out, size_t out_len,
-                      const uint8_t *key, size_t key_len,
-                      const uint8_t *label, size_t label_len,
-                      const uint8_t *seed, size_t seed_len)
+int gost_kdf_tree_256(u8 *out, size_t out_len,
+                      const u8 *key, size_t key_len,
+                      const u8 *label, size_t label_len,
+                      const u8 *seed, size_t seed_len)
 {
-  uint8_t suffix[1 + 255 + sizeof(size_t)];
-  uint8_t len_buf[sizeof(size_t)];
-  uint8_t counter;
+  u8 suffix[1 + 255 + sizeof(size_t)];
+  u8 len_buf[sizeof(size_t)];
+  u8 counter;
   size_t len_len;
   size_t off;
 
@@ -63,21 +62,21 @@ int gost_kdf_tree_256(uint8_t *out, size_t out_len,
   return 0;
 }
 
-int gost_tls_prf_256(uint8_t *out, size_t out_len,
-                     const uint8_t *secret, size_t secret_len,
-                     const char *label, const uint8_t *seed, size_t seed_len)
+int gost_tls_prf_256(u8 *out, size_t out_len,
+                     const u8 *secret, size_t secret_len,
+                     const char *label, const u8 *seed, size_t seed_len)
 {
-  uint8_t a[32];
-  uint8_t block[32];
+  u8 a[32];
+  u8 block[32];
   size_t label_len = strlen(label);
   size_t take;
 
   hmac_streebog256_parts(a, secret, secret_len,
-                         (const uint8_t *)label, label_len,
+                         (const u8 *)label, label_len,
                          seed, seed_len, NULL, 0);
   while (out_len) {
     hmac_streebog256_parts(block, secret, secret_len, a, sizeof(a),
-                           (const uint8_t *)label, label_len,
+                           (const u8 *)label, label_len,
                            seed, seed_len);
     take = out_len < sizeof(block) ? out_len : sizeof(block);
     memcpy(out, block, take);
@@ -91,17 +90,17 @@ int gost_tls_prf_256(uint8_t *out, size_t out_len,
   return 0;
 }
 
-static uint64_t get_le64(const uint8_t in[8])
+static u64 get_le64(const u8 in[8])
 {
-  uint64_t value = 0;
+  u64 value = 0;
   unsigned int i;
 
   for (i = 0; i < 8; i++)
-    value |= (uint64_t)in[i] << (8 * i);
+    value |= (u64)in[i] << (8 * i);
   return value;
 }
 
-static void put_le64(uint8_t out[8], uint64_t value)
+static void put_le64(u8 out[8], u64 value)
 {
   unsigned int i;
 
@@ -109,16 +108,16 @@ static void put_le64(uint8_t out[8], uint64_t value)
     out[i] = value >> (8 * i);
 }
 
-int gost_tls_tlstree_kuznyechik(uint8_t out[32], const uint8_t key[32],
-                                const uint8_t seq[8])
+int gost_tls_tlstree_kuznyechik(u8 out[32], const u8 key[32],
+                                const u8 seq[8])
 {
-  static const uint8_t level1[] = "level1";
-  static const uint8_t level2[] = "level2";
-  static const uint8_t level3[] = "level3";
-  uint8_t seed[8];
-  uint8_t tmp1[32];
-  uint8_t tmp2[32];
-  uint64_t n = get_le64(seq);
+  static const u8 level1[] = "level1";
+  static const u8 level2[] = "level2";
+  static const u8 level3[] = "level3";
+  u8 seed[8];
+  u8 tmp1[32];
+  u8 tmp2[32];
+  u64 n = get_le64(seq);
   int ret = -1;
 
   put_le64(seed, n & UINT64_C(0x00000000ffffffff));
@@ -140,7 +139,7 @@ out:
   return ret;
 }
 
-static void shift_left(uint8_t out[16], const uint8_t in[16])
+static void shift_left(u8 out[16], const u8 in[16])
 {
   unsigned int carry = 0;
   int i;
@@ -153,21 +152,21 @@ static void shift_left(uint8_t out[16], const uint8_t in[16])
   }
 }
 
-static uint8_t omac_byte(const uint8_t *a, size_t a_len,
-                         const uint8_t *b, size_t pos)
+static u8 omac_byte(const u8 *a, size_t a_len,
+                         const u8 *b, size_t pos)
 {
   return pos < a_len ? a[pos] : b[pos - a_len];
 }
 
-void kuznyechik_omac2(uint8_t out[16], const uint8_t key[32],
-                      const uint8_t *a, size_t a_len,
-                      const uint8_t *b, size_t b_len)
+void kuznyechik_omac2(u8 out[16], const u8 key[32],
+                      const u8 *a, size_t a_len,
+                      const u8 *b, size_t b_len)
 {
   struct kuznyechik_ctx ctx;
-  uint8_t state[16] = { 0 };
-  uint8_t subkey1[16];
-  uint8_t subkey2[16];
-  uint8_t block[16];
+  u8 state[16] = { 0 };
+  u8 subkey1[16];
+  u8 subkey2[16];
+  u8 block[16];
   unsigned int msb;
   size_t data_len = a_len + b_len;
   size_t blocks = data_len ? (data_len + 15) / 16 : 1;
@@ -215,13 +214,13 @@ void kuznyechik_omac2(uint8_t out[16], const uint8_t key[32],
   memzero(block, sizeof(block));
 }
 
-void kuznyechik_omac(uint8_t out[16], const uint8_t key[32],
-                     const uint8_t *data, size_t data_len)
+void kuznyechik_omac(u8 out[16], const u8 key[32],
+                     const u8 *data, size_t data_len)
 {
   kuznyechik_omac2(out, key, data, data_len, NULL, 0);
 }
 
-static void ctr_inc(uint8_t ctr[16])
+static void ctr_inc(u8 ctr[16])
 {
   int i;
 
@@ -232,8 +231,8 @@ static void ctr_inc(uint8_t ctr[16])
 
 static void acpkm_next(struct kuznyechik_ctx *ctx)
 {
-  uint8_t d[16];
-  uint8_t key[32];
+  u8 d[16];
+  u8 key[32];
   unsigned int i;
 
   for (i = 0; i < sizeof(d); i++)
@@ -246,13 +245,13 @@ static void acpkm_next(struct kuznyechik_ctx *ctx)
   memzero(key, sizeof(key));
 }
 
-void kuznyechik_ctr_acpkm(uint8_t *out, const uint8_t *in, size_t len,
-                          const uint8_t key[32], const uint8_t iv[8],
+void kuznyechik_ctr_acpkm(u8 *out, const u8 *in, size_t len,
+                          const u8 key[32], const u8 iv[8],
                           size_t section_size)
 {
   struct kuznyechik_ctx ctx;
-  uint8_t ctr[16] = { 0 };
-  uint8_t stream[16];
+  u8 ctr[16] = { 0 };
+  u8 stream[16];
   size_t done = 0;
   size_t take;
   size_t i;
@@ -274,11 +273,11 @@ void kuznyechik_ctr_acpkm(uint8_t *out, const uint8_t *in, size_t len,
   memzero(stream, sizeof(stream));
 }
 
-void kuznyechik_kexp15(uint8_t out[48], const uint8_t key[32],
-                       const uint8_t mac_key[32], const uint8_t enc_key[32],
-                       const uint8_t iv[8])
+void kuznyechik_kexp15(u8 out[48], const u8 key[32],
+                       const u8 mac_key[32], const u8 enc_key[32],
+                       const u8 iv[8])
 {
-  uint8_t data[40];
+  u8 data[40];
 
   memcpy(data, iv, 8);
   memcpy(data + 8, key, 32);
@@ -288,7 +287,7 @@ void kuznyechik_kexp15(uint8_t out[48], const uint8_t key[32],
   memzero(data, sizeof(data));
 }
 
-static int secure_equal(const uint8_t *a, const uint8_t *b, size_t len)
+static int secure_equal(const u8 *a, const u8 *b, size_t len)
 {
   unsigned int diff = 0;
 
@@ -297,13 +296,13 @@ static int secure_equal(const uint8_t *a, const uint8_t *b, size_t len)
   return diff == 0;
 }
 
-int kuznyechik_kimp15(uint8_t key[32], const uint8_t in[48],
-                       const uint8_t mac_key[32], const uint8_t enc_key[32],
-                       const uint8_t iv[8])
+int kuznyechik_kimp15(u8 key[32], const u8 in[48],
+                       const u8 mac_key[32], const u8 enc_key[32],
+                       const u8 iv[8])
 {
-  uint8_t data[40];
-  uint8_t plain[48];
-  uint8_t mac[16];
+  u8 data[40];
+  u8 plain[48];
+  u8 mac[16];
   int ret = -1;
 
   kuznyechik_ctr_acpkm(plain, in, sizeof(plain), enc_key, iv, 0);

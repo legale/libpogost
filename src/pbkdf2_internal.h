@@ -3,10 +3,10 @@
 #define LIBPOGOST_PBKDF2_INTERNAL_H
 
 #include <stddef.h>
-#include <stdint.h>
+#include <libpogost/types.h>
 
-int pbkdf2_streebog512(uint8_t *out, size_t out_len,
-                       const uint8_t *pass, size_t pass_len,
-                       const uint8_t *salt, size_t salt_len, uint32_t iter);
+int pbkdf2_streebog512(u8 *out, size_t out_len,
+                       const u8 *pass, size_t pass_len,
+                       const u8 *salt, size_t salt_len, u32 iter);
 
 #endif

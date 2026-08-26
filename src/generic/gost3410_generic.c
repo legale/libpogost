@@ -65,19 +65,19 @@ static struct ecc_curve curve = {
   .b = curve_b
 };
 
-static void vli_to_le(uint8_t *out, const u64 *in)
+static void vli_to_le(u8 *out, const u64 *in)
 {
   unsigned int i;
   unsigned int j;
 
   for (i = 0; i < NDIGITS; i++)
     for (j = 0; j < 8; j++)
-      out[i * 8 + j] = (uint8_t)(in[i] >> (j * 8));
+      out[i * 8 + j] = (u8)(in[i] >> (j * 8));
 }
 
-static void vli_to_be(uint8_t *out, const u64 *in)
+static void vli_to_be(u8 *out, const u64 *in)
 {
-  uint8_t tmp[GOST3410_512_KEY_SIZE];
+  u8 tmp[GOST3410_512_KEY_SIZE];
   unsigned int i;
 
   vli_to_le(tmp, in);
@@ -92,7 +92,7 @@ static int scalar_valid(const u64 *scalar)
          vli_cmp(scalar, curve.n, NDIGITS) < 0;
 }
 
-static void digest_scalar(u64 *e, const uint8_t *digest)
+static void digest_scalar(u64 *e, const u8 *digest)
 {
   vli_from_le64(e, digest, NDIGITS);
   if (vli_cmp(e, curve.n, NDIGITS) >= 0)
@@ -102,8 +102,8 @@ static void digest_scalar(u64 *e, const uint8_t *digest)
 }
 
 int gost3410_512a_public(
-    uint8_t public_key[GOST3410_512_PUBLIC_SIZE],
-    const uint8_t private_key[GOST3410_512_KEY_SIZE])
+    u8 public_key[GOST3410_512_PUBLIC_SIZE],
+    const u8 private_key[GOST3410_512_KEY_SIZE])
 {
   u64 d[NDIGITS];
   u64 x[NDIGITS];
@@ -122,10 +122,10 @@ int gost3410_512a_public(
 }
 
 int gost3410_512a_sign(
-    uint8_t signature[GOST3410_512_SIGNATURE_SIZE],
-    const uint8_t digest[GOST3410_512_DIGEST_SIZE],
-    const uint8_t private_key[GOST3410_512_KEY_SIZE],
-    const uint8_t nonce[GOST3410_512_KEY_SIZE])
+    u8 signature[GOST3410_512_SIGNATURE_SIZE],
+    const u8 digest[GOST3410_512_DIGEST_SIZE],
+    const u8 private_key[GOST3410_512_KEY_SIZE],
+    const u8 nonce[GOST3410_512_KEY_SIZE])
 {
   u64 d[NDIGITS];
   u64 e[NDIGITS];
@@ -166,9 +166,9 @@ int gost3410_512a_sign(
 }
 
 int gost3410_512a_verify(
-    const uint8_t public_key[GOST3410_512_PUBLIC_SIZE],
-    const uint8_t digest[GOST3410_512_DIGEST_SIZE],
-    const uint8_t signature[GOST3410_512_SIGNATURE_SIZE])
+    const u8 public_key[GOST3410_512_PUBLIC_SIZE],
+    const u8 digest[GOST3410_512_DIGEST_SIZE],
+    const u8 signature[GOST3410_512_SIGNATURE_SIZE])
 {
   u64 qx[NDIGITS];
   u64 qy[NDIGITS];
@@ -202,10 +202,10 @@ int gost3410_512a_verify(
 }
 
 int gost3410_512a_vko(
-    uint8_t shared_key[GOST3410_512_DIGEST_SIZE],
-    const uint8_t public_key[GOST3410_512_PUBLIC_SIZE],
-    const uint8_t private_key[GOST3410_512_KEY_SIZE],
-    const uint8_t ukm[GOST3410_512_UKM_SIZE])
+    u8 shared_key[GOST3410_512_DIGEST_SIZE],
+    const u8 public_key[GOST3410_512_PUBLIC_SIZE],
+    const u8 private_key[GOST3410_512_KEY_SIZE],
+    const u8 ukm[GOST3410_512_UKM_SIZE])
 {
   u64 qx[NDIGITS];
   u64 qy[NDIGITS];
@@ -214,7 +214,7 @@ int gost3410_512a_vko(
   u64 d[NDIGITS];
   u64 u[NDIGITS] = { 0 };
   u64 scalar[NDIGITS];
-  uint8_t secret[GOST3410_512_PUBLIC_SIZE];
+  u8 secret[GOST3410_512_PUBLIC_SIZE];
   struct ecc_point q = ECC_POINT_INIT(qx, qy, NDIGITS);
   struct ecc_point c = ECC_POINT_INIT(cx, cy, NDIGITS);
 

@@ -3,14 +3,12 @@
 #define LIBPOGOST_ECC_GENERIC_H
 
 #include <stdbool.h>
-#include <stdint.h>
+#include <libpogost/types.h>
 
 #define ECC_MAX_DIGITS (512 / 64)
 #define ECC_POINT_INIT(px, py, digits) \
   (struct ecc_point) { (px), (py), (digits) }
 
-typedef uint64_t u64;
-typedef uint32_t u32;
 
 struct ecc_point {
   u64 *x;

@@ -12,7 +12,7 @@
 #include <string.h>
 
 
-const uint8_t gost28147_sbox_cryptopro_a[8][16] = {
+const u8 gost28147_sbox_cryptopro_a[8][16] = {
   { 0xb, 0xa, 0xf, 0x5, 0x0, 0xc, 0xe, 0x8,
     0x6, 0x2, 0x3, 0x9, 0x1, 0x7, 0xd, 0x4 },
   { 0x1, 0xd, 0x2, 0x9, 0x7, 0xa, 0x6, 0x0,
@@ -32,7 +32,7 @@ const uint8_t gost28147_sbox_cryptopro_a[8][16] = {
 };
 
 /* Needed by later PFX code; not exposed by the public cipher API. */
-const uint8_t gost28147_sbox_cryptopro_3411[8][16] = {
+const u8 gost28147_sbox_cryptopro_3411[8][16] = {
   { 0x1, 0x3, 0xa, 0x9, 0x5, 0xb, 0x4, 0xf,
     0x8, 0x6, 0x7, 0xe, 0xd, 0x0, 0x2, 0xc },
   { 0xd, 0xe, 0x4, 0x1, 0x7, 0x0, 0x5, 0xa,
@@ -51,7 +51,7 @@ const uint8_t gost28147_sbox_cryptopro_3411[8][16] = {
     0xd, 0xc, 0xe, 0x0, 0x9, 0x2, 0xb, 0xf },
 };
 
-const uint8_t gost28147_sbox_tc26_z[8][16] = {
+const u8 gost28147_sbox_tc26_z[8][16] = {
   { 0x1, 0x7, 0xe, 0xd, 0x0, 0x5, 0x8, 0x3,
     0x4, 0xf, 0xa, 0x6, 0x9, 0xc, 0xb, 0x2 },
   { 0x8, 0xe, 0x2, 0x5, 0x6, 0x9, 0x1, 0xc,
@@ -70,13 +70,13 @@ const uint8_t gost28147_sbox_tc26_z[8][16] = {
     0xe, 0x8, 0xd, 0x7, 0x0, 0x3, 0xf, 0x1 },
 };
 
-static uint32_t get_le32(const uint8_t in[4])
+static u32 get_le32(const u8 in[4])
 {
-  return (uint32_t)in[0] | (uint32_t)in[1] << 8 |
-         (uint32_t)in[2] << 16 | (uint32_t)in[3] << 24;
+  return (u32)in[0] | (u32)in[1] << 8 |
+         (u32)in[2] << 16 | (u32)in[3] << 24;
 }
 
-static void put_le32(uint8_t out[4], uint32_t v)
+static void put_le32(u8 out[4], u32 v)
 {
   out[0] = v;
   out[1] = v >> 8;
@@ -84,22 +84,22 @@ static void put_le32(uint8_t out[4], uint32_t v)
   out[3] = v >> 24;
 }
 
-static uint32_t subst(const struct gost28147_state *st, uint32_t v)
+static u32 subst(const struct gost28147_state *st, u32 v)
 {
-  uint32_t x = 0;
+  u32 x = 0;
   unsigned int i;
 
   for (i = 0; i < 8; i++) {
-    x |= (uint32_t)st->sbox[7 - i][(v >> (i * 4)) & 0xf] << (i * 4);
+    x |= (u32)st->sbox[7 - i][(v >> (i * 4)) & 0xf] << (i * 4);
   }
   return x << 11 | x >> 21;
 }
 
-static void crypt(const struct gost28147_state *st, uint8_t out[8],
-                  const uint8_t in[8], int dec)
+static void crypt(const struct gost28147_state *st, u8 out[8],
+                  const u8 in[8], int dec)
 {
-  uint32_t n1 = get_le32(in);
-  uint32_t n2 = get_le32(in + 4);
+  u32 n1 = get_le32(in);
+  u32 n2 = get_le32(in + 4);
   unsigned int r;
 
   for (r = 0; r < 32; r++) {
@@ -123,18 +123,18 @@ static void crypt(const struct gost28147_state *st, uint8_t out[8],
 }
 
 
-static const uint8_t key_mesh_key[32] = {
+static const u8 key_mesh_key[32] = {
   0x69, 0x00, 0x72, 0x22, 0x64, 0xc9, 0x04, 0x23,
   0x8d, 0x3a, 0xdb, 0x96, 0x46, 0xe9, 0x2a, 0xc4,
   0x18, 0xfe, 0xac, 0x94, 0x00, 0xed, 0x07, 0x12,
   0xc0, 0x86, 0xdc, 0xc2, 0xef, 0x4c, 0xa9, 0x2b,
 };
 
-static void key_mesh(struct gost28147_state *st, uint8_t iv[8])
+static void key_mesh(struct gost28147_state *st, u8 iv[8])
 {
-  uint8_t key[32];
-  uint8_t next_iv[8];
-  const uint8_t (*sbox)[16] = st->sbox;
+  u8 key[32];
+  u8 next_iv[8];
+  const u8 (*sbox)[16] = st->sbox;
   unsigned int i;
 
   for (i = 0; i < 4; i++) {
@@ -147,12 +147,12 @@ static void key_mesh(struct gost28147_state *st, uint8_t iv[8])
   memset(next_iv, 0, sizeof(next_iv));
 }
 
-int gost28147_cfb_crypt(struct gost28147_state *st, uint8_t *out,
-                        const uint8_t *in, size_t len, const uint8_t iv[8],
+int gost28147_cfb_crypt(struct gost28147_state *st, u8 *out,
+                        const u8 *in, size_t len, const u8 iv[8],
                         int enc, int mesh)
 {
-  uint8_t cur_iv[8];
-  uint8_t gamma[8];
+  u8 cur_iv[8];
+  u8 gamma[8];
   size_t off = 0;
 
   if (!st || !out || (!in && len) || !iv) {
@@ -172,7 +172,7 @@ int gost28147_cfb_crypt(struct gost28147_state *st, uint8_t *out,
     }
     gost28147_encrypt_raw(st, gamma, cur_iv);
     for (i = 0; i < n; i++) {
-      uint8_t c = in[off + i] ^ gamma[i];
+      u8 c = in[off + i] ^ gamma[i];
 
       out[off + i] = c;
       cur_iv[i] = enc ? c : in[off + i];
@@ -185,8 +185,8 @@ int gost28147_cfb_crypt(struct gost28147_state *st, uint8_t *out,
   return 0;
 }
 
-void gost28147_setkey_raw(struct gost28147_state *st, const uint8_t key[32],
-                          const uint8_t sbox[8][16])
+void gost28147_setkey_raw(struct gost28147_state *st, const u8 key[32],
+                          const u8 sbox[8][16])
 {
   unsigned int i;
 
@@ -196,22 +196,22 @@ void gost28147_setkey_raw(struct gost28147_state *st, const uint8_t key[32],
   st->sbox = sbox;
 }
 
-void gost28147_encrypt_raw(const struct gost28147_state *st, uint8_t out[8],
-                           const uint8_t in[8])
+void gost28147_encrypt_raw(const struct gost28147_state *st, u8 out[8],
+                           const u8 in[8])
 {
   crypt(st, out, in, 0);
 }
 
-void gost28147_decrypt_raw(const struct gost28147_state *st, uint8_t out[8],
-                           const uint8_t in[8])
+void gost28147_decrypt_raw(const struct gost28147_state *st, u8 out[8],
+                           const u8 in[8])
 {
   crypt(st, out, in, 1);
 }
 
-int gost28147_mac4_raw(const struct gost28147_state *st, uint8_t out[4],
-                       const uint8_t iv[8], const uint8_t *in, size_t len)
+int gost28147_mac4_raw(const struct gost28147_state *st, u8 out[4],
+                       const u8 iv[8], const u8 *in, size_t len)
 {
-  uint8_t mac[8];
+  u8 mac[8];
   size_t off;
 
   if (!st || !out || !iv || !in || !len || len % 8) {
@@ -220,8 +220,8 @@ int gost28147_mac4_raw(const struct gost28147_state *st, uint8_t out[4],
 
   memcpy(mac, iv, sizeof(mac));
   for (off = 0; off < len; off += 8) {
-    uint32_t n1 = get_le32(mac) ^ get_le32(in + off);
-    uint32_t n2 = get_le32(mac + 4) ^ get_le32(in + off + 4);
+    u32 n1 = get_le32(mac) ^ get_le32(in + off);
+    u32 n2 = get_le32(mac + 4) ^ get_le32(in + off + 4);
     unsigned int r;
 
     for (r = 0; r < 16; r++) {
@@ -253,7 +253,7 @@ _Static_assert(sizeof(struct gost28147_state) <= sizeof(struct gost28147_ctx),
                "GOST28147_CTX_SIZE is too small");
 
 int gost28147_setkey_cryptopro_a(struct gost28147_ctx *ctx,
-                                 const uint8_t key[32])
+                                 const u8 key[32])
 {
   if (!ctx || !key) {
     return -1;
@@ -262,14 +262,14 @@ int gost28147_setkey_cryptopro_a(struct gost28147_ctx *ctx,
   return 0;
 }
 
-void gost28147_encrypt(const struct gost28147_ctx *ctx, uint8_t out[8],
-                       const uint8_t in[8])
+void gost28147_encrypt(const struct gost28147_ctx *ctx, u8 out[8],
+                       const u8 in[8])
 {
   gost28147_encrypt_raw(state_const(ctx), out, in);
 }
 
-void gost28147_decrypt(const struct gost28147_ctx *ctx, uint8_t out[8],
-                       const uint8_t in[8])
+void gost28147_decrypt(const struct gost28147_ctx *ctx, u8 out[8],
+                       const u8 in[8])
 {
   gost28147_decrypt_raw(state_const(ctx), out, in);
 }

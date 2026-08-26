@@ -1,20 +1,19 @@
 #include <libpogost/streebog.h>
 
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
-static const uint8_t msg[] =
+static const u8 msg[] =
   "012345678901234567890123456789012345678901234567890123456789012";
 
-static const uint8_t digest256[STREEBOG256_DIGEST_SIZE] = {
+static const u8 digest256[STREEBOG256_DIGEST_SIZE] = {
   0x9d, 0x15, 0x1e, 0xef, 0xd8, 0x59, 0x0b, 0x89,
   0xda, 0xa6, 0xba, 0x6c, 0xb7, 0x4a, 0xf9, 0x27,
   0x5d, 0xd0, 0x51, 0x02, 0x6b, 0xb1, 0x49, 0xa4,
   0x52, 0xfd, 0x84, 0xe5, 0xe5, 0x7b, 0x55, 0x00,
 };
 
-static const uint8_t digest512[STREEBOG512_DIGEST_SIZE] = {
+static const u8 digest512[STREEBOG512_DIGEST_SIZE] = {
   0x1b, 0x54, 0xd0, 0x1a, 0x4a, 0xf5, 0xb9, 0xd5,
   0xcc, 0x3d, 0x86, 0xd6, 0x8d, 0x28, 0x54, 0x62,
   0xb1, 0x9a, 0xbc, 0x24, 0x75, 0x22, 0x2f, 0x35,
@@ -25,10 +24,10 @@ static const uint8_t digest512[STREEBOG512_DIGEST_SIZE] = {
   0x41, 0x79, 0x78, 0x91, 0xc1, 0x64, 0x6f, 0x48,
 };
 
-static int test_hash(unsigned int bits, const uint8_t *want, size_t len)
+static int test_hash(unsigned int bits, const u8 *want, size_t len)
 {
   struct streebog_ctx ctx;
-  uint8_t got[STREEBOG512_DIGEST_SIZE];
+  u8 got[STREEBOG512_DIGEST_SIZE];
 
   streebog_init(&ctx, bits);
   streebog_update(&ctx, msg, 17);

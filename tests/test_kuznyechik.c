@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 
 #include <libpogost/kuznyechik.h>
@@ -23,7 +22,7 @@ static const unsigned char ciphertext[KUZNYECHIK_BLOCK_SIZE] = {
   0x5a, 0x46, 0x8d, 0x42, 0xb9, 0xd4, 0xed, 0xcd,
 };
 
-static uint32_t random_word(uint32_t *state)
+static u32 random_word(u32 *state)
 {
   *state = *state * 1664525U + 1013904223U;
   return *state;
@@ -40,7 +39,7 @@ static int test_differential(void)
   unsigned char generic_out[KUZNYECHIK_BLOCK_SIZE];
   unsigned char simd_out[KUZNYECHIK_BLOCK_SIZE];
   unsigned char recovered[KUZNYECHIK_BLOCK_SIZE];
-  uint32_t state = 1;
+  u32 state = 1;
   unsigned int i;
   unsigned int j;
 

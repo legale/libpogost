@@ -9,21 +9,21 @@
 
 static void memzero(void *ptr, size_t len)
 {
-  volatile uint8_t *p = ptr;
+  volatile u8 *p = ptr;
 
   while (len--) {
     *p++ = 0;
   }
 }
 
-int cryptopro_keybag_kdf(uint8_t out[32],
-                         const uint8_t *pass_utf16le, size_t pass_len,
-                         const uint8_t *salt, size_t salt_len, uint32_t iter)
+int cryptopro_keybag_kdf(u8 out[32],
+                         const u8 *pass_utf16le, size_t pass_len,
+                         const u8 *salt, size_t salt_len, u32 iter)
 {
-  uint8_t key[32];
-  const uint8_t *cur = pass_utf16le;
+  u8 key[32];
+  const u8 *cur = pass_utf16le;
   size_t cur_len = pass_len;
-  uint32_t i;
+  u32 i;
 
   if (!out || (!pass_utf16le && pass_len) || !salt || salt_len < 8 ||
       !iter || iter > 1000000) {
@@ -31,7 +31,7 @@ int cryptopro_keybag_kdf(uint8_t out[32],
   }
 
   for (i = 1; i <= iter; i++) {
-    uint8_t ctr[2] = { i >> 8, i };
+    u8 ctr[2] = { i >> 8, i };
 
     gost3411_94_cryptopro_parts(key, cur, cur_len, salt, salt_len,
                                 ctr, sizeof(ctr));
@@ -43,14 +43,14 @@ int cryptopro_keybag_kdf(uint8_t out[32],
   return 0;
 }
 
-int cryptopro_keybag_wrap(uint8_t *out, uint8_t mac[4],
-                          const uint8_t *in, size_t len,
-                          const uint8_t key[32],
-                          const uint8_t *ukm, size_t ukm_len, int enc)
+int cryptopro_keybag_wrap(u8 *out, u8 mac[4],
+                          const u8 *in, size_t len,
+                          const u8 key[32],
+                          const u8 *ukm, size_t ukm_len, int enc)
 {
-  static const uint8_t label[4] = { 0x26, 0xbd, 0xb8, 0x78 };
+  static const u8 label[4] = { 0x26, 0xbd, 0xb8, 0x78 };
   struct gost28147_state st;
-  uint8_t ke[32];
+  u8 ke[32];
   size_t off;
   int ret = -1;
 
@@ -82,12 +82,12 @@ out:
   return ret;
 }
 
-int cryptopro_keybag_blob_crypt(uint8_t *out, const uint8_t *in, size_t len,
-                                const uint8_t key[32],
-                                const uint8_t *salt, size_t salt_len, int enc)
+int cryptopro_keybag_blob_crypt(u8 *out, const u8 *in, size_t len,
+                                const u8 key[32],
+                                const u8 *salt, size_t salt_len, int enc)
 {
   struct gost28147_state st;
-  uint8_t iv[8];
+  u8 iv[8];
   int ret;
 
   if (!out || (!in && len) || !key || !salt || salt_len < sizeof(iv) ||
