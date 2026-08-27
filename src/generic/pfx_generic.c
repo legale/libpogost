@@ -62,6 +62,30 @@ int gost_pfx_gost89_encrypt(u8 *out, const u8 *in, size_t len,
   return ret;
 }
 
+int gost_pfx_gost89_decrypt(u8 *out, const u8 *in, size_t len,
+                            const u8 *pass_utf8, size_t pass_len,
+                            const u8 *salt, size_t salt_len,
+                            u32 iter, const u8 iv[8])
+{
+  struct gost28147_state st;
+  u8 key[32];
+  int ret;
+
+  if (!out || (!in && len) || (!pass_utf8 && pass_len) || !salt ||
+      !salt_len || !iter || !iv) {
+    return -1;
+  }
+  if (pbkdf2_streebog512(key, sizeof(key), pass_utf8, pass_len,
+                         salt, salt_len, iter)) {
+    return -1;
+  }
+  gost28147_setkey_raw(&st, key, gost28147_sbox_tc26_z);
+  ret = gost28147_cfb_crypt(&st, out, in, len, iv, 0, 1);
+  memzero(key, sizeof(key));
+  memzero(&st, sizeof(st));
+  return ret;
+}
+
 int gost_pfx_mac(u8 out[GOST_PFX_MAC_SIZE],
                  const u8 *data, size_t data_len,
                  const u8 *pass_utf8, size_t pass_len,

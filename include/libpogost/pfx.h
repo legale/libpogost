@@ -13,6 +13,12 @@ int gost_pfx_gost89_encrypt(u8 *out, const u8 *in, size_t len,
                             const u8 *salt, size_t salt_len,
                             u32 iter, const u8 iv[8]);
 
+/* Расшифровать содержимое PFX тем же GOST 28147 CFB режимом. */
+int gost_pfx_gost89_decrypt(u8 *out, const u8 *in, size_t len,
+                            const u8 *pass_utf8, size_t pass_len,
+                            const u8 *salt, size_t salt_len,
+                            u32 iter, const u8 iv[8]);
+
 /* data is DER-encoded AuthenticatedSafe, not the outer OCTET STRING. */
 int gost_pfx_mac(u8 out[GOST_PFX_MAC_SIZE],
                  const u8 *data, size_t data_len,
