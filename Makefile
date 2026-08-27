@@ -21,6 +21,7 @@ LIB_OBJS = $(BUILD_DIR)/kuznyechik.o \
 	$(BUILD_DIR)/generic/pbkdf2_generic.o \
 	$(BUILD_DIR)/generic/pfx_generic.o \
 	$(BUILD_DIR)/generic/streebog_generic.o \
+	$(BUILD_DIR)/generic/sha1_generic.o \
 	$(BUILD_DIR)/generic/blake2s_api.o \
 	$(BUILD_DIR)/generic/blake2s_generic.o \
 	$(BUILD_DIR)/generic/chacha_api.o \

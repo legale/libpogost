@@ -25,7 +25,12 @@ int gost_pfx_mac(u8 out[GOST_PFX_MAC_SIZE],
                  const u8 *pass_utf8, size_t pass_len,
                  const u8 *salt, size_t salt_len, u32 iter);
 
-/* OID 1.2.840.113549.1.12.1.80. Password must already be UTF-16LE. */
+/* MAC штатного cpro_native PFX: PKCS#12 SHA-1, пароль в UTF-16BE. */
+int gost_pfx_sha1_mac(u8 out[20], const u8 *data, size_t data_len,
+                     const u8 *pass_utf16be, size_t pass_len,
+                     const u8 *salt, size_t salt_len, u32 iter);
+
+/* OID 1.2.840.113549.1.12.1.80; пароль уже должен быть в UTF-16LE. */
 int gost_pfx_cp80_wrap(u8 *enc,
                        u8 mac[GOST_PFX_CP80_MAC_SIZE],
                        const u8 *raw_key, size_t key_len,
@@ -33,8 +38,12 @@ int gost_pfx_cp80_wrap(u8 *enc,
                        const u8 *salt, size_t salt_len, u32 iter,
                        const u8 ukm[8]);
 
-/* Encrypt an already DER-encoded CryptoPro CPBlob bag value. */
+/* Зашифровать уже сформированный DER-блок CryptoPro CPBlob. */
 int gost_pfx_cp80_encrypt(u8 *out, const u8 *blob, size_t blob_len,
+                          const u8 *pass_utf16le, size_t pass_len,
+                          const u8 *salt, size_t salt_len, u32 iter);
+
+int gost_pfx_cp80_decrypt(u8 *out, const u8 *blob, size_t blob_len,
                           const u8 *pass_utf16le, size_t pass_len,
                           const u8 *salt, size_t salt_len, u32 iter);
 

@@ -101,3 +101,21 @@ int cryptopro_keybag_blob_crypt(u8 *out, const u8 *in, size_t len,
   memzero(&st, sizeof(st));
   return ret;
 }
+
+int gost_pfx_cp80_decrypt(u8 *out, const u8 *blob, size_t blob_len,
+                          const u8 *pass_utf16le, size_t pass_len,
+                          const u8 *salt, size_t salt_len, u32 iter)
+{
+  u8 key[32];
+  int ret;
+
+  if (!out || (!blob && blob_len) || !pass_utf16le || !salt)
+    return -1;
+  if (cryptopro_keybag_kdf(key, pass_utf16le, pass_len, salt, salt_len,
+                           iter))
+    return -1;
+  ret = cryptopro_keybag_blob_crypt(out, blob, blob_len, key, salt, salt_len,
+                                    0);
+  memzero(key, sizeof(key));
+  return ret;
+}
