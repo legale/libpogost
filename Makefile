@@ -2,6 +2,7 @@ CC ?= musl-gcc
 SAN_CC ?= cc
 AR ?= ar
 BUILD_DIR ?= build
+LIBPOGOST_SIMD ?= 1
 # Основная сборка должна работать с musl. Санитайзеры задают свой CC.
 CPPFLAGS ?= -Iinclude -Isrc
 CFLAGS ?= -O2 -fPIC -std=c11 -Wall -Wextra -Werror
@@ -38,10 +39,12 @@ LIB_OBJS = $(BUILD_DIR)/kuznyechik.o \
 	$(BUILD_DIR)/xoshiro256pp.o \
 	$(BUILD_DIR)/optimized/gost3410_256a.o
 
+ifeq ($(LIBPOGOST_SIMD),1)
 ifeq ($(shell uname -m),x86_64)
 CPPFLAGS += -DLIBPOGOST_HAVE_KUZNYECHIK_SIMD=1
 LIB_OBJS += $(BUILD_DIR)/x86_64/kuznyechik_simd.o \
 	$(BUILD_DIR)/x86_64/kuznyechik_simd_x86_64.o
+endif
 endif
 TESTS = $(BUILD_DIR)/test_gost28147 $(BUILD_DIR)/test_gost3410 \
 	$(BUILD_DIR)/test_gost3411_94 $(BUILD_DIR)/test_gost_tls \
