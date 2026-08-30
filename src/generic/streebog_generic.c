@@ -17,11 +17,19 @@
 #endif
 
 #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#ifndef cpu_to_le64
 #define cpu_to_le64(x) __builtin_bswap64(x)
+#endif
+#ifndef le64_to_cpu
 #define le64_to_cpu(x) __builtin_bswap64(x)
+#endif
 #else
+#ifndef cpu_to_le64
 #define cpu_to_le64(x) (x)
+#endif
+#ifndef le64_to_cpu
 #define le64_to_cpu(x) (x)
+#endif
 #endif
 
 struct streebog_uint512 {
