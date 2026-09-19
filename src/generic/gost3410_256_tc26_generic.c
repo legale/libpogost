@@ -392,3 +392,32 @@ int gost3410_256tc26a_vko(
   memset(secret, 0, sizeof(secret));
   return 0;
 }
+
+int gost3410_256tc26a_ecdh(
+    u8 shared_secret[GOST3410_256_KEY_SIZE],
+    const u8 public_key[GOST3410_256_PUBLIC_SIZE],
+    const u8 private_key[GOST3410_256_KEY_SIZE])
+{
+  u64 qx[NDIGITS];
+  u64 qy[NDIGITS];
+  u64 d[NDIGITS];
+  u64 x[NDIGITS];
+  u64 y[NDIGITS];
+  struct ecc_point q = ECC_POINT_INIT(qx, qy, NDIGITS);
+  struct ecc_point res = ECC_POINT_INIT(x, y, NDIGITS);
+
+  vli_from_le64(qx, public_key, NDIGITS);
+  vli_from_le64(qy, public_key + GOST3410_256_KEY_SIZE, NDIGITS);
+  vli_from_le64(d, private_key, NDIGITS);
+
+  if (!ecc_point_valid_generic(&curve, &q) || !scalar_valid(d))
+    return -1;
+
+  point_mult(&res, &q, d);
+  if (point_inf(&res))
+    return -1;
+
+  vli_to_le(shared_secret, res.x);
+  memset(d, 0, sizeof(d));
+  return 0;
+}

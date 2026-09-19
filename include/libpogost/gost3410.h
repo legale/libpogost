@@ -41,6 +41,10 @@ int gost3410_256tc26a_verify(
     const u8 public_key[GOST3410_256_PUBLIC_SIZE],
     const u8 digest[GOST3410_256_DIGEST_SIZE],
     const u8 signature[GOST3410_256_SIGNATURE_SIZE]);
+int gost3410_256tc26a_ecdh(
+    u8 shared_secret[GOST3410_256_KEY_SIZE],
+    const u8 public_key[GOST3410_256_PUBLIC_SIZE],
+    const u8 private_key[GOST3410_256_KEY_SIZE]);
 int gost3410_256tc26a_vko(
     u8 shared_key[GOST3410_256_DIGEST_SIZE],
     const u8 public_key[GOST3410_256_PUBLIC_SIZE],
