@@ -398,9 +398,20 @@ int gost3410_256tc26a_ecdh(
     const u8 public_key[GOST3410_256_PUBLIC_SIZE],
     const u8 private_key[GOST3410_256_KEY_SIZE])
 {
+  return gost3410_256tc26a_ecdh_cofactor(shared_secret, public_key, private_key);
+}
+
+int gost3410_256tc26a_ecdh_cofactor_xy(
+    u8 point_x[GOST3410_256_KEY_SIZE],
+    u8 point_y[GOST3410_256_KEY_SIZE],
+    const u8 public_key[GOST3410_256_PUBLIC_SIZE],
+    const u8 private_key[GOST3410_256_KEY_SIZE])
+{
   u64 qx[NDIGITS];
   u64 qy[NDIGITS];
   u64 d[NDIGITS];
+  u64 h[NDIGITS] = { 4 };
+  u64 scalar[NDIGITS];
   u64 x[NDIGITS];
   u64 y[NDIGITS];
   struct ecc_point q = ECC_POINT_INIT(qx, qy, NDIGITS);
@@ -413,11 +424,28 @@ int gost3410_256tc26a_ecdh(
   if (!ecc_point_valid_generic(&curve, &q) || !scalar_valid(d))
     return -1;
 
-  point_mult(&res, &q, d);
+  vli_mod_mult_slow(scalar, d, h, curve.n, NDIGITS);
+  if (vli_is_zero(scalar, NDIGITS))
+    return -1;
+
+  point_mult(&res, &q, scalar);
   if (point_inf(&res))
     return -1;
 
-  vli_to_le(shared_secret, res.x);
+  if (point_x)
+    vli_to_le(point_x, res.x);
+  if (point_y)
+    vli_to_le(point_y, res.y);
   memset(d, 0, sizeof(d));
+  memset(scalar, 0, sizeof(scalar));
   return 0;
 }
+
+int gost3410_256tc26a_ecdh_cofactor(
+    u8 shared_secret[GOST3410_256_KEY_SIZE],
+    const u8 public_key[GOST3410_256_PUBLIC_SIZE],
+    const u8 private_key[GOST3410_256_KEY_SIZE])
+{
+  return gost3410_256tc26a_ecdh_cofactor_xy(shared_secret, NULL, public_key, private_key);
+}
+

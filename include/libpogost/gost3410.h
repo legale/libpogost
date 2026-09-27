@@ -45,6 +45,15 @@ int gost3410_256tc26a_ecdh(
     u8 shared_secret[GOST3410_256_KEY_SIZE],
     const u8 public_key[GOST3410_256_PUBLIC_SIZE],
     const u8 private_key[GOST3410_256_KEY_SIZE]);
+int gost3410_256tc26a_ecdh_cofactor(
+    u8 shared_secret[GOST3410_256_KEY_SIZE],
+    const u8 public_key[GOST3410_256_PUBLIC_SIZE],
+    const u8 private_key[GOST3410_256_KEY_SIZE]);
+int gost3410_256tc26a_ecdh_cofactor_xy(
+    u8 point_x[GOST3410_256_KEY_SIZE],
+    u8 point_y[GOST3410_256_KEY_SIZE],
+    const u8 public_key[GOST3410_256_PUBLIC_SIZE],
+    const u8 private_key[GOST3410_256_KEY_SIZE]);
 int gost3410_256tc26a_vko(
     u8 shared_key[GOST3410_256_DIGEST_SIZE],
     const u8 public_key[GOST3410_256_PUBLIC_SIZE],
