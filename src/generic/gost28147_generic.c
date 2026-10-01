@@ -239,16 +239,16 @@ int gost28147_mac4_raw(const struct gost28147_state *st, u8 out[4],
   return 0;
 }
 
-int gost28147_imit_cp12(u8 out[4], const u8 *in, size_t len,
-                        const u8 initial_state[8], const u8 a[32],
-                        const u8 b[32])
+int gost28147_imit_cp12_sbox(u8 out[4], const u8 *in, size_t len,
+                              const u8 initial_state[8], const u8 a[32],
+                              const u8 b[32], const u8 sbox[8][16])
 {
   struct gost28147_state st;
   u8 key[32], buffer[8], tail[8] = {0};
   size_t off;
   unsigned int i;
 
-  if (!out || (!in && len) || !initial_state || !a || !b)
+  if (!out || (!in && len) || !initial_state || !a || !b || !sbox)
     return -1;
 
   /*
@@ -263,8 +263,8 @@ int gost28147_imit_cp12(u8 out[4], const u8 *in, size_t len,
     put_le32(key + i * 4, aw - bw);
   }
 
-  /* TC26-Z и порядок 16 раундов взяты из доказанного gost-engine кандидата. */
-  gost28147_setkey_raw(&st, key, gost28147_sbox_tc26_z);
+  /* Таблица подстановок зависит от OID алгоритма ключа (CryptoPro-A или TC26-Z). */
+  gost28147_setkey_raw(&st, key, sbox);
   memcpy(buffer, initial_state, sizeof(buffer));
   for (off = 0; off + sizeof(buffer) <= len; off += sizeof(buffer)) {
     u32 n1 = get_le32(buffer) ^ get_le32(in + off);
@@ -313,6 +313,14 @@ int gost28147_imit_cp12(u8 out[4], const u8 *in, size_t len,
   memset(key, 0, sizeof(key));
   memset(buffer, 0, sizeof(buffer));
   return 0;
+}
+
+int gost28147_imit_cp12(u8 out[4], const u8 *in, size_t len,
+                        const u8 initial_state[8], const u8 a[32],
+                        const u8 b[32])
+{
+  return gost28147_imit_cp12_sbox(out, in, len, initial_state, a, b,
+                                  gost28147_sbox_tc26_z);
 }
 
 static struct gost28147_state *state(struct gost28147_ctx *ctx)
