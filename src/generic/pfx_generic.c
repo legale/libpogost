@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 #include <libpogost/pfx.h>
+#include <libpogost/rc2.h>
 
 #include "gost28147_internal.h"
 #include "hmac_streebog_internal.h"
@@ -45,8 +46,9 @@ static void sha1_hmac(u8 out[20], const u8 *key, size_t key_len,
   memzero(inner, sizeof(inner));
 }
 
-static int pkcs12_sha1_key(u8 out[20], const u8 *pass, size_t pass_len,
-                           const u8 *salt, size_t salt_len, u32 iter)
+static int pkcs12_sha1_derive(u8 *out, size_t out_len, u8 id,
+                              const u8 *pass, size_t pass_len,
+                              const u8 *salt, size_t salt_len, u32 iter)
 {
   u8 input[4096];
   u8 diversifier[64];
@@ -57,10 +59,9 @@ static int pkcs12_sha1_key(u8 out[20], const u8 *pass, size_t pass_len,
   size_t i;
   u32 round;
 
-  /* Native PFX использует PKCS#12 KDF для SHA-1 MAC, а не PBKDF2. */
   if (!out || (!pass && pass_len) || !salt || !iter ||
       !salt_len || salt_len > sizeof(input) || pass_len > sizeof(input) ||
-      pass_len + salt_len > sizeof(input))
+      pass_len + salt_len > sizeof(input) || out_len > sizeof(a))
     return -1;
   salt_rep = salt_len ? ((salt_len + 63) / 64) * 64 : 0;
   pass_rep = pass_len ? ((pass_len + 63) / 64) * 64 : 0;
@@ -71,7 +72,7 @@ static int pkcs12_sha1_key(u8 out[20], const u8 *pass, size_t pass_len,
     input[i] = salt[i % salt_len];
   for (i = 0; i < pass_rep; i++)
     input[salt_rep + i] = pass_len ? pass[i % pass_len] : 0;
-  memset(diversifier, 3, sizeof(diversifier));
+  memset(diversifier, id, sizeof(diversifier));
   {
     struct sha1_ctx ctx;
 
@@ -84,7 +85,7 @@ static int pkcs12_sha1_key(u8 out[20], const u8 *pass, size_t pass_len,
       sha1_update(&ctx, a, sizeof(a));
       sha1_final(&ctx, a);
     }
-    memcpy(out, a, sizeof(a));
+    memcpy(out, a, out_len);
   }
   memzero(input, sizeof(input));
   memzero(diversifier, sizeof(diversifier));
@@ -101,12 +102,109 @@ int gost_pfx_sha1_mac(u8 out[20], const u8 *data, size_t data_len,
 
   if (!out || (!data && data_len) || (!pass_utf16be && pass_len) || !salt)
     return -1;
-  ret = pkcs12_sha1_key(key, pass_utf16be, pass_len, salt, salt_len, iter);
+  ret = pkcs12_sha1_derive(key, sizeof(key), 3, pass_utf16be, pass_len, salt, salt_len, iter);
   if (!ret)
     sha1_hmac(out, key, sizeof(key), data, data_len);
   memzero(key, sizeof(key));
   return ret;
 }
+
+int gost_pfx_rc2_40_pbe_encrypt(u8 *out, size_t *out_len,
+                                const u8 *in, size_t in_len,
+                                const u8 *pass_utf16be, size_t pass_len,
+                                const u8 *salt, size_t salt_len, u32 iter)
+{
+  struct rc2_key ks;
+  u8 key[5];
+  u8 iv[8];
+  u8 pad_len;
+  size_t total_len;
+  size_t full_blocks;
+
+  if (!out || !out_len || (!in && in_len) || (!pass_utf16be && pass_len) ||
+      !salt || !salt_len || !iter)
+    return -1;
+
+  pad_len = 8 - (in_len % 8);
+  total_len = in_len + pad_len;
+  if (*out_len < total_len)
+    return -1;
+
+  if (pkcs12_sha1_derive(key, sizeof(key), 1, pass_utf16be, pass_len, salt, salt_len, iter) ||
+      pkcs12_sha1_derive(iv, sizeof(iv), 2, pass_utf16be, pass_len, salt, salt_len, iter)) {
+    memzero(key, sizeof(key));
+    memzero(iv, sizeof(iv));
+    return -1;
+  }
+
+  rc2_set_key(&ks, sizeof(key), key, 40);
+  memzero(key, sizeof(key));
+
+  full_blocks = in_len / 8;
+  if (full_blocks > 0)
+    rc2_cbc_encrypt(&ks, iv, in, out, full_blocks * 8);
+
+  {
+    u8 last_block[8];
+    size_t rem = in_len % 8;
+    if (rem > 0)
+      memcpy(last_block, in + full_blocks * 8, rem);
+    memset(last_block + rem, pad_len, pad_len);
+    rc2_cbc_encrypt(&ks, iv, last_block, out + full_blocks * 8, 8);
+    memzero(last_block, sizeof(last_block));
+  }
+
+  memzero(&ks, sizeof(ks));
+  memzero(iv, sizeof(iv));
+  *out_len = total_len;
+  return 0;
+}
+
+int gost_pfx_rc2_40_pbe_decrypt(u8 *out, size_t *out_len,
+                                const u8 *in, size_t in_len,
+                                const u8 *pass_utf16be, size_t pass_len,
+                                const u8 *salt, size_t salt_len, u32 iter)
+{
+  struct rc2_key ks;
+  u8 key[5];
+  u8 iv[8];
+  u8 pad_val;
+  size_t i;
+
+  if (!out || !out_len || !in || !in_len || (in_len % 8 != 0) ||
+      (!pass_utf16be && pass_len) || !salt || !salt_len || !iter)
+    return -1;
+
+  if (*out_len < in_len)
+    return -1;
+
+  if (pkcs12_sha1_derive(key, sizeof(key), 1, pass_utf16be, pass_len, salt, salt_len, iter) ||
+      pkcs12_sha1_derive(iv, sizeof(iv), 2, pass_utf16be, pass_len, salt, salt_len, iter)) {
+    memzero(key, sizeof(key));
+    memzero(iv, sizeof(iv));
+    return -1;
+  }
+
+  rc2_set_key(&ks, sizeof(key), key, 40);
+  memzero(key, sizeof(key));
+
+  rc2_cbc_decrypt(&ks, iv, in, out, in_len);
+  memzero(&ks, sizeof(ks));
+  memzero(iv, sizeof(iv));
+
+  pad_val = out[in_len - 1];
+  if (pad_val < 1 || pad_val > 8 || (size_t)pad_val > in_len)
+    return -1;
+
+  for (i = 0; i < pad_val; i++) {
+    if (out[in_len - 1 - i] != pad_val)
+      return -1;
+  }
+
+  *out_len = in_len - pad_val;
+  return 0;
+}
+
 
 int pfx_mac_streebog512(u8 out[64],
                          const u8 *data, size_t data_len,

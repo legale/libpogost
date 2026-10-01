@@ -47,4 +47,18 @@ int gost_pfx_cp80_decrypt(u8 *out, const u8 *blob, size_t blob_len,
                           const u8 *pass_utf16le, size_t pass_len,
                           const u8 *salt, size_t salt_len, u32 iter);
 
+/* PKCS#12 pbeWithSHAAnd40BitRC2-CBC (OID 1.2.840.113549.1.12.1.6).
+ * pass_utf16be: пароль в UTF-16BE (2 байта на символ, с 2 завершающими нулями 0x0000).
+ */
+int gost_pfx_rc2_40_pbe_encrypt(u8 *out, size_t *out_len,
+                                const u8 *in, size_t in_len,
+                                const u8 *pass_utf16be, size_t pass_len,
+                                const u8 *salt, size_t salt_len, u32 iter);
+
+int gost_pfx_rc2_40_pbe_decrypt(u8 *out, size_t *out_len,
+                                const u8 *in, size_t in_len,
+                                const u8 *pass_utf16be, size_t pass_len,
+                                const u8 *salt, size_t salt_len, u32 iter);
+
 #endif
+

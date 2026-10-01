@@ -99,6 +99,39 @@ int main(void)
     return 1;
   }
 
+  {
+    static const u8 rc2_pass16[] = { 0, '1', 0, '2', 0, '3', 0, '4', 0, '5', 0, '6', 0, 0 };
+    static const u8 rc2_salt[8] = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 };
+    static const u8 rc2_in[23] = "Hello RC2-40 PBE test!!";
+    static const u8 rc2_expected[24] = {
+      0xe4, 0x7e, 0xb5, 0xa4, 0xdb, 0x33, 0x4c, 0x1a,
+      0xcc, 0x38, 0x51, 0xd7, 0xf6, 0x60, 0xe1, 0x6e,
+      0xe8, 0x70, 0x9a, 0x72, 0x71, 0x37, 0x1f, 0x6b
+    };
+    u8 rc2_enc[64];
+    u8 rc2_dec[64];
+    size_t rc2_enc_len = sizeof(rc2_enc);
+    size_t rc2_dec_len = sizeof(rc2_dec);
+
+    if (gost_pfx_rc2_40_pbe_encrypt(rc2_enc, &rc2_enc_len, rc2_in, sizeof(rc2_in),
+                                   rc2_pass16, sizeof(rc2_pass16),
+                                   rc2_salt, sizeof(rc2_salt), 2000) ||
+        rc2_enc_len != sizeof(rc2_expected) ||
+        memcmp(rc2_enc, rc2_expected, sizeof(rc2_expected))) {
+      fprintf(stderr, "pfx rc2_40 encrypt failed\n");
+      return 1;
+    }
+    if (gost_pfx_rc2_40_pbe_decrypt(rc2_dec, &rc2_dec_len, rc2_enc, rc2_enc_len,
+                                   rc2_pass16, sizeof(rc2_pass16),
+                                   rc2_salt, sizeof(rc2_salt), 2000) ||
+        rc2_dec_len != sizeof(rc2_in) ||
+        memcmp(rc2_dec, rc2_in, sizeof(rc2_in))) {
+      fprintf(stderr, "pfx rc2_40 decrypt failed\n");
+      return 1;
+    }
+  }
+
   puts("pfx: ok");
   return 0;
+
 }
