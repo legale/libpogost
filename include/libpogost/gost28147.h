@@ -22,4 +22,15 @@ void gost28147_decrypt(const struct gost28147_ctx *ctx,
                        u8 out[GOST28147_BLOCK_SIZE],
                        const u8 in[GOST28147_BLOCK_SIZE]);
 
+/*
+ * Имит-подобный MAC из gost-engine/gost_crypt.c:
+ * TC26-Z, 16 раундов GOST 28147, ключевые слова = a[i] - b[i].
+ * Начальное состояние и неполный последний блок обрабатываются так же,
+ * как в наблюдавшемся update libcsp для CPExportBlob2.
+ */
+int gost28147_imit_cp12(u8 out[4], const u8 *in, size_t len,
+                        const u8 initial_state[GOST28147_BLOCK_SIZE],
+                        const u8 a[GOST28147_KEY_SIZE],
+                        const u8 b[GOST28147_KEY_SIZE]);
+
 #endif

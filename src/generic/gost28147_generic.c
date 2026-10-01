@@ -239,6 +239,82 @@ int gost28147_mac4_raw(const struct gost28147_state *st, u8 out[4],
   return 0;
 }
 
+int gost28147_imit_cp12(u8 out[4], const u8 *in, size_t len,
+                        const u8 initial_state[8], const u8 a[32],
+                        const u8 b[32])
+{
+  struct gost28147_state st;
+  u8 key[32], buffer[8], tail[8] = {0};
+  size_t off;
+  unsigned int i;
+
+  if (!out || (!in && len) || !initial_state || !a || !b)
+    return -1;
+
+  /*
+   * Источник знаков разности: libcsp block-update/finalizer и его C-reference
+   * из /tmp/finalizer_ref.tar.xz. Это сводит два 32-байтных массива CSP к
+   * одному ключу, который в gost-engine представлен как key[i] + mask[i].
+   */
+  for (i = 0; i < 8; i++) {
+    u32 aw = get_le32(a + i * 4);
+    u32 bw = get_le32(b + i * 4);
+
+    put_le32(key + i * 4, aw - bw);
+  }
+
+  /* TC26-Z и порядок 16 раундов взяты из доказанного gost-engine кандидата. */
+  gost28147_setkey_raw(&st, key, gost28147_sbox_tc26_z);
+  memcpy(buffer, initial_state, sizeof(buffer));
+  for (off = 0; off + sizeof(buffer) <= len; off += sizeof(buffer)) {
+    u32 n1 = get_le32(buffer) ^ get_le32(in + off);
+    u32 n2 = get_le32(buffer + 4) ^ get_le32(in + off + 4);
+    unsigned int round;
+
+    for (round = 0; round < 16; round++) {
+      if (round & 1)
+        n1 ^= subst(&st, n2 + st.key[round & 7]);
+      else
+        n2 ^= subst(&st, n1 + st.key[round & 7]);
+    }
+    put_le32(buffer, n1);
+    put_le32(buffer + 4, n2);
+  }
+
+  if (off < len) {
+    memcpy(tail, in + off, len - off);
+    for (i = 0; i < sizeof(tail); i++)
+      buffer[i] ^= tail[i];
+    memset(tail, 0, sizeof(tail));
+  }
+
+  /*
+   * Источник финальных 16 раундов: наблюдение libcsp+0x160150 и
+   * gost-engine/gost_crypt.c. Назначение: после update libcsp сначала
+   * XOR-ит хвост в state, а затем тем же IMIT-примитивом получает trailer;
+   * нулевой блок здесь означает «раунды без дополнительного XOR».
+   */
+  {
+    u32 n1 = get_le32(buffer);
+    u32 n2 = get_le32(buffer + 4);
+    unsigned int round;
+
+    for (round = 0; round < 16; round++) {
+      if (round & 1)
+        n1 ^= subst(&st, n2 + st.key[round & 7]);
+      else
+        n2 ^= subst(&st, n1 + st.key[round & 7]);
+    }
+    put_le32(buffer, n1);
+    put_le32(buffer + 4, n2);
+  }
+
+  memcpy(out, buffer, 4);
+  memset(key, 0, sizeof(key));
+  memset(buffer, 0, sizeof(buffer));
+  return 0;
+}
+
 static struct gost28147_state *state(struct gost28147_ctx *ctx)
 {
   return (struct gost28147_state *)ctx;
